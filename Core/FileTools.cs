@@ -16,32 +16,32 @@ namespace dupesfiles2.Core
 			public List<FileInfo[]> Files { get; set; } = new List<FileInfo[]>();
 		}
 
-		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string pattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
+		// public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string pattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
+		public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
 		{
-			if (string.IsNullOrWhiteSpace(pattern))
-				pattern = "*.*";
+			if (string.IsNullOrWhiteSpace(searchpattern))
+				searchpattern = "*.*";
 
 			// First get all directories
-			var dirs = EnumerateDirectoriesRecursive(basepath, pattern, recursive);
+			var dirs = EnumerateDirectoriesRecursive(basepath, searchpattern, recursive);
 
 			// then get all files
 			List<FileInfo[]> output = new List<FileInfo[]>();
-			ProgressReportModel report = new ProgressReportModel();
+			// ProgressReportModel report = new ProgressReportModel();
 
 			// Parallel async
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
 				{
-					FileInfo[] results = dir.GetFiles(pattern, options);
+					FileInfo[] results = dir.GetFiles(searchpattern, options);
 					output.Add(results);
 					cancellationToken.ThrowIfCancellationRequested();
-					report.Files = output;
-					// report.PercentageComplete = (output.Count * 100) / dirs.Length;
-					progress.Report(report);
+					// report.Files = output;
+					// report.PercentageComplete = (output.Count * 100) / results.Length;
+					// progress.Report(report);
 				});
 			});
-
 			return output;
 		}
 

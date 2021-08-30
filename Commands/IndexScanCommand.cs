@@ -32,25 +32,13 @@ namespace todo.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
-
 			Manager m = new Manager();
-
 			await AnsiConsole.Status()
-			.Spinner(Spinner.Known.Star)
-			.Start("Scanning the index...", async ctx =>
+			.StartAsync("Scanning the index...", async ctx =>
 			{
 				await m.ScanIndex(settings);
 			});
-
-			// AnsiConsole.Status()
-			// .Spinner(Spinner.Known.Star)
-			// .Start("Scanning the index...", ctx =>
-			// {
-			// 	m.ScanIndex(settings);
-			// });
-
 			m.Dispose();
-
 			return 0;
 		}
 

@@ -35,6 +35,10 @@ namespace todo.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
+
+			if (string.IsNullOrEmpty(settings.Path))
+				return 0;
+
 			var searchOptions = new EnumerationOptions
 			{
 				AttributesToSkip = settings.IncludeHidden
@@ -43,27 +47,17 @@ namespace todo.Commands
 				RecurseSubdirectories = settings.Recursive
 			};
 
+
 			Manager m = new Manager();
 			int before = m.idx.Count;
-
 			await AnsiConsole.Status()
-			.Spinner(Spinner.Known.Star)
-			.Start("Adding files to the index...", async ctx =>
+			.StartAsync("Adding files to the index...", async ctx =>
 			{
-				// var searchPattern = settings.SearchPattern ?? "*.*";
-				// var searchPath = settings.Path ?? Directory.GetCurrentDirectory();
-				// var files = new DirectoryInfo(searchPath).GetFiles(searchPattern, searchOptions);
-
-
-				await m.AddFiles(settings);
+				await m.AddFilesToIndex(settings);
 			});
-
-
 			int diff = m.idx.Count - before;
 			AnsiConsole.MarkupLine($"Added [green]{ diff }[/] files to the index.");
 			m.Dispose();
-
-
 			return 0;
 		}
 	}

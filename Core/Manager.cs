@@ -24,10 +24,10 @@ namespace dupesfiles2.Core
 			this.idx = IndexDataModel.LoadFromFile();
 		}
 
-		public async Task AddFiles(IndexAddCommand.Settings settings)
+		public async Task AddFilesToIndex(IndexAddCommand.Settings settings)
 		{
-			Progress<ProgressReportModel> progress = new Progress<ProgressReportModel>();
-			progress.ProgressChanged += ReportIndexAddProgress;
+			// Progress<ProgressReportModel> progress = new Progress<ProgressReportModel>();
+			// progress.ProgressChanged += ReportAddFilesToIndexProgress;
 
 			var searchOptions = new EnumerationOptions
 			{
@@ -35,33 +35,37 @@ namespace dupesfiles2.Core
 				RecurseSubdirectories = true
 			};
 
-			var results = await FileTools.GetFilesAsync(progress, settings.Path, settings.SearchPattern, searchOptions, settings.Recursive, cts.Token);
+			// Get files
+			// var results = await FileTools.GetFilesAsync(progress, settings.Path, settings.SearchPattern, searchOptions, settings.Recursive, cts.Token);
+			var results = await FileTools.GetFilesAsync(settings.Path, settings.SearchPattern, searchOptions, settings.Recursive, cts.Token);
 
+			// add results to the index
 			foreach (var item in results)
 			{
 				foreach (var subitem in item)
 				{
 					this.idx.Add(new ItemDataModel() { Path = subitem.FullName, Size = subitem.Length, Hash = string.Empty });
-					// this.idx.Add(new ItemDataModel() { Path = subitem.FullName });
 				}
 			}
 
 			// PrintResults(results);
 		}
-		private void ReportIndexAddProgress(object sender, ProgressReportModel e)
+		private void ReportAddFilesToIndexProgress(object sender, ProgressReportModel e)
 		{
-			// foreach (var item in e.SitesDownloaded)
-			// {
-			// 	foreach (FileInfo subitem in item)
-			// 	{
-			// 		AnsiConsole.MarkupLine($" { subitem.FullName }");
-			// 	}
-			// }
+			foreach (var item in e.Files)
+			{
+				Console.WriteLine($" Adding { e.Files.Count } files...");
+				foreach (FileInfo subitem in item)
+				{
+					Console.WriteLine($" Adding { subitem.FullName }");
+				}
+			}
 		}
+
 		public async Task ScanIndex(IndexScanCommand.Settings settings)
 		{
 			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
-			progress.ProgressChanged += ReportScanProgress;
+			progress.ProgressChanged += ReportScanIndexProgress;
 
 			var searchOptions = new EnumerationOptions
 			{
@@ -72,7 +76,7 @@ namespace dupesfiles2.Core
 			await ScanTools.GetHashParallelAsync(progress, this.idx, this.cts.Token);
 		}
 
-		private void ReportScanProgress(object sender, ItemDataModel e)
+		private void ReportScanIndexProgress(object sender, ItemDataModel e)
 		{
 			// 
 		}

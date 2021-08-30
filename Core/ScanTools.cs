@@ -19,23 +19,36 @@ namespace dupesfiles2.Core
 			{
 				Parallel.ForEach<ItemDataModel>(idx, (item) =>
 				{
-					string checksum = CalculateSHA256(item.Path);
-					// string checksum = string.Empty;
-
-					// Todo: check for binary equality...
+					string checksum = CalculateMD5(item.Path);
 					// ItemDataModel result = new ItemDataModel() { Path = item.Path, Hash = checksum };
 					// report.Add(result);
 					item.Hash = checksum;
-
 					// cancellationToken.ThrowIfCancellationRequested();
-
 					// report progress
 					// progress.Report(result);
 
 				});
 			});
-
 			return report;
+		}
+
+		private static string CalculateMD5(string filename)
+		{
+			try
+			{
+				using (var sha = MD5.Create())
+				{
+					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
+					{
+						var hash = sha.ComputeHash(stream);
+						return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+					}
+				}
+			}
+			catch (System.Exception)
+			{
+				return "n/a";
+			}
 		}
 
 		private static string CalculateSHA256(string filename)
@@ -51,9 +64,9 @@ namespace dupesfiles2.Core
 					}
 				}
 			}
-			catch (System.Exception ex)
+			catch (System.Exception)
 			{
-				return ex.Message;
+				return "n/a";
 			}
 		}
 
