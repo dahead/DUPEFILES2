@@ -71,6 +71,11 @@ namespace dupesfiles2.Core
 			return report;
 		}
 
+		internal void Dispose()
+		{
+			IndexDataModel.SaveToFile(this.idx);
+		}
+
 		private void ReportProgress(object sender, ProgressReportModel e)
 		{
 			foreach (var item in e.SitesDownloaded)

@@ -23,19 +23,19 @@ namespace dupesfiles2.Core
 			// First get all directories
 			var dirs = EnumerateDirectoriesRecursive(basepath, pattern, recursive);
 
-			// when get all files
+			// then get all files
 			List<FileInfo[]> output = new List<FileInfo[]>();
 			ProgressReportModel report = new ProgressReportModel();
 
+			// Parallel async
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
 				{
 					FileInfo[] results = dir.GetFiles(pattern, options);
 					output.Add(results);
-
 					report.SitesDownloaded = output;
-					// report.PercentageComplete = (output.Count * 100) / websites.Count;
+					// report.PercentageComplete = (output.Count * 100) / dirs.Length;
 					progress.Report(report);
 				});
 			});
@@ -52,7 +52,7 @@ namespace dupesfiles2.Core
 			{
 				string dir = todo.Dequeue();
 				string[] subdirs = new string[0];
-				string[] files = new string[0];
+				string[] items = new string[0];
 				DirectoryInfo di = new DirectoryInfo(dir);
 
 				try
@@ -78,7 +78,7 @@ namespace dupesfiles2.Core
 
 				try
 				{
-					files = Directory.GetDirectories(dir, pattern);
+					items = Directory.GetDirectories(dir, pattern);
 				}
 				catch (IOException)
 				{
@@ -90,9 +90,9 @@ namespace dupesfiles2.Core
 				}
 
 				// Return all files
-				foreach (string filename in files)
+				foreach (string item in items)
 				{
-					yield return new DirectoryInfo(filename);
+					yield return new DirectoryInfo(item);
 				}
 			}
 

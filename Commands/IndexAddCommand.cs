@@ -55,6 +55,7 @@ namespace todo.Commands
 
 				Manager m = new Manager();
 				m.AddFiles(settings);
+				m.Dispose();
 
 				// var totalFileSize = files.Sum(fileInfo => fileInfo.Length);
 				// AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]: [blue]{totalFileSize:N0}[/] bytes");
