@@ -33,19 +33,22 @@ namespace todo.Commands
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
 			Manager m = new Manager();
+
+			// hash
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
 			{
 				await m.ScanIndex(settings);
 			});
 
+			// binary
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for binary duplicates...", async ctx =>
 			{
 				await m.CompareIndex(settings);
 			});
 
-
+			// save and return
 			m.Dispose();
 			return 0;
 		}
