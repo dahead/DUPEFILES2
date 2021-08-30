@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,21 +45,20 @@ namespace dupesfiles2.Core
 			}
 
 			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
-
-			// PrintResults(results);
 		}
 
 		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string searchpattern, CancellationToken cancellationToken)
 		{
+			// setup base search path
 			if (string.IsNullOrWhiteSpace(searchpattern))
 				searchpattern = "*.*";
 
+			// create search options
 			var searchOptions = new EnumerationOptions
 			{
 				AttributesToSkip = true ? FileAttributes.Hidden | FileAttributes.System : FileAttributes.System,
 				RecurseSubdirectories = false
 			};
-
 
 			// add basedir to dirs
 			var dirs = new List<DirectoryInfo>();
@@ -87,7 +87,6 @@ namespace dupesfiles2.Core
 					ProgressReportModel report = new ProgressReportModel();
 					report.BaseDirectory = dir.FullName;
 					report.Count = results.Length;
-
 					// report.PercentageComplete = (output.Count * 100) / results.Length;
 
 					progress.Report(report);
@@ -100,14 +99,6 @@ namespace dupesfiles2.Core
 		private void ReportAddFilesToIndexProgress(object sender, ProgressReportModel e)
 		{
 			AnsiConsole.MarkupLine($" Adding [bold]{ e.Count }[/] files from [red]{ e.BaseDirectory }[/] ");
-			// foreach (var item in e.Files)
-			// {
-			// 	Console.WriteLine($" Adding { e.Files.Count } files...");
-			// 	foreach (FileInfo subitem in item)
-			// 	{
-			// 		Console.WriteLine($" Adding { subitem.FullName }");
-			// 	}
-			// }
 		}
 
 		public async Task<List<ItemDataModel>> ScanIndex(IndexScanCommand.Settings settings)
@@ -122,31 +113,38 @@ namespace dupesfiles2.Core
 
 		public static async Task<List<ItemDataModel>> GetHashParallelAsync(IProgress<ItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
-
-			// var data = idx
-			// .Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
-			//.Where(t => t.Path.Contains(settings.Pattern)
-			// );
-
 			var report = new List<ItemDataModel>();
+
+			// Todo: make use of the settings
+			// var fsmin = idx.Where(t => t.Size > 0 && t.Size < settings.SizeMax);
+			// var fspat = fsmin.Where(t => t.Path.Contains(settings.Pattern));
+
+			IEnumerable<IGrouping<long, ItemDataModel>> filesizeduplicates =
+				idx.GroupBy(f => f.Size, f => f);
 
 			await Task.Run(() =>
 			{
-				Parallel.ForEach<ItemDataModel>(idx, (item) =>
+				Parallel.ForEach<IGrouping<long, ItemDataModel>>(filesizeduplicates, (g) =>
 				{
-					// string checksum = CalculateMD5(item.Path);
-					string checksum = CalculateSHA256(item.Path);
-					ItemDataModel result = new ItemDataModel() { Path = item.Path, Hash = checksum };
-					report.Add(result);
+					// Only when we have more than one file
+					if (g.Count() > 1)
+					{
+						foreach (var sub in g)
+						{
+							// string checksum = CalculateMD5(item.Path);
+							string checksum = CalculateSHA256(sub.Path);
+							ItemDataModel result = new ItemDataModel() { Path = sub.Path, Hash = checksum };
+							report.Add(result);
 
-					// remember the hash
-					item.Hash = checksum;
+							// remember the hash
+							sub.Hash = checksum;
 
-					cancellationToken.ThrowIfCancellationRequested();
+							cancellationToken.ThrowIfCancellationRequested();
 
-					// report progress
-					progress.Report(result);
-
+							// report progress
+							progress.Report(result);
+						}
+					}
 				});
 			});
 
@@ -242,18 +240,5 @@ namespace dupesfiles2.Core
 		{
 			IndexDataModel.SaveToFile(this.idx);
 		}
-
-		private void PrintResults(List<FileInfo[]> results)
-		{
-			// foreach (var item in results)
-			// {
-			// 	foreach (FileInfo subitem in item)
-			// 	{
-			// 		AnsiConsole.MarkupLine($" { subitem.FullName }");
-			// 	}
-			// }
-		}
-
 	}
-
 }
