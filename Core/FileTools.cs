@@ -22,7 +22,7 @@ namespace dupesfiles2.Core
 		// public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
 
 
-		public static IEnumerable<DirectoryInfo> EnumerateDirectoriesRecursive(string basepath, string pattern, bool recursive = true)
+		public static IEnumerable<DirectoryInfo> EnumerateDirectoriesRecursive(string basepath, string pattern, EnumerationOptions searchoptions, bool recursive = true)
 		{
 			var todo = new Queue<string>();
 			todo.Enqueue(basepath);
@@ -37,7 +37,7 @@ namespace dupesfiles2.Core
 				try
 				{
 					if (recursive)
-						subdirs = Directory.GetDirectories(dir);
+						subdirs = Directory.GetDirectories(dir, pattern, searchoptions);
 					else
 						subdirs = new string[] { dir };
 				}

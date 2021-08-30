@@ -14,7 +14,7 @@
 			"args": [
 				// "index-update"
 				"index-add",
-				"/home/dh/Downloads/BVGT"
+				"/home/dh/"
 				// "index-scan"
 			],
 			"cwd": "${workspaceFolder}",

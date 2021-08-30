@@ -65,7 +65,7 @@ namespace dupesfiles2.Core
 			dirs.Add(new DirectoryInfo(settings.Path));
 
 			// First get all directories
-			var subdirs = FileTools.EnumerateDirectoriesRecursive(settings.Path, settings.SearchPattern, true);
+			var subdirs = FileTools.EnumerateDirectoriesRecursive(settings.Path, settings.SearchPattern, searchOptions, true);
 			foreach (var item in subdirs)
 			{
 				dirs.Add(item);

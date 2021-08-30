@@ -49,14 +49,6 @@ namespace todo.Commands
 			if (string.IsNullOrEmpty(settings.Path))
 				settings.Path = Environment.CurrentDirectory;
 
-			var searchOptions = new EnumerationOptions
-			{
-				AttributesToSkip = settings.IncludeHidden
-				   ? FileAttributes.Hidden | FileAttributes.System
-				   : FileAttributes.System,
-				RecurseSubdirectories = settings.Recursive,
-			};
-
 			Manager m = new Manager();
 			int before = m.idx.Count;
 			await AnsiConsole.Status()
