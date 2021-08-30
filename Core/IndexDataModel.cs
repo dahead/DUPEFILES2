@@ -23,7 +23,7 @@ namespace todo.Core
 
 		private static IndexDataModel LoadFromFile(string filename)
 		{
-			if (System.IO.File.Exists(filename))
+			try
 			{
 				using (StreamReader file = File.OpenText(filename))
 				{
@@ -31,7 +31,10 @@ namespace todo.Core
 					return (IndexDataModel)serializer.Deserialize(file, typeof(IndexDataModel));
 				}
 			}
-			return new IndexDataModel();
+			catch (System.Exception)
+			{
+				return new IndexDataModel();
+			}
 		}
 
 		public static void SaveToFile(IndexDataModel index)
@@ -61,9 +64,8 @@ namespace todo.Core
 	public class ItemDataModel
 	{
 		public string Path { get; set; }
-		public int Size { get; set; }
+		public long Size { get; set; }
 		public string Hash { get; set; }
-
 	}
 
 }

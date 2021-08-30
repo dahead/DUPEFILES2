@@ -1,5 +1,4 @@
 debug/*
 bin/*
 obj/*
-Commands/old/*
-items.json
+index.json

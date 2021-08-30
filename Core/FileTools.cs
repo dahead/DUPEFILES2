@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using todo.Core;
 
@@ -12,10 +13,10 @@ namespace dupesfiles2.Core
 		public class ProgressReportModel
 		{
 			public int PercentageComplete { get; set; } = 0;
-			public List<FileInfo[]> SitesDownloaded { get; set; } = new List<FileInfo[]>();
+			public List<FileInfo[]> Files { get; set; } = new List<FileInfo[]>();
 		}
 
-		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string pattern, EnumerationOptions options, bool recursive = true)
+		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string pattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(pattern))
 				pattern = "*.*";
@@ -34,7 +35,8 @@ namespace dupesfiles2.Core
 				{
 					FileInfo[] results = dir.GetFiles(pattern, options);
 					output.Add(results);
-					report.SitesDownloaded = output;
+					cancellationToken.ThrowIfCancellationRequested();
+					report.Files = output;
 					// report.PercentageComplete = (output.Count * 100) / dirs.Length;
 					progress.Report(report);
 				});

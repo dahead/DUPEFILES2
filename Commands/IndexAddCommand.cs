@@ -43,6 +43,9 @@ namespace todo.Commands
 				RecurseSubdirectories = settings.Recursive
 			};
 
+			Manager m = new Manager();
+			int before = m.idx.Count;
+
 			await AnsiConsole.Status()
 			.Spinner(Spinner.Known.Star)
 			.Start("Adding files to the index...", async ctx =>
@@ -52,14 +55,14 @@ namespace todo.Commands
 				// var files = new DirectoryInfo(searchPath).GetFiles(searchPattern, searchOptions);
 
 
-
-				Manager m = new Manager();
-				m.AddFiles(settings);
-				m.Dispose();
-
-				// var totalFileSize = files.Sum(fileInfo => fileInfo.Length);
-				// AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]: [blue]{totalFileSize:N0}[/] bytes");
+				await m.AddFiles(settings);
 			});
+
+
+			int diff = m.idx.Count - before;
+			AnsiConsole.MarkupLine($"Added [green]{ diff }[/] files to the index.");
+			m.Dispose();
+
 
 			return 0;
 		}
