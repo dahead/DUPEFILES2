@@ -31,6 +31,16 @@ namespace todo.Commands
 			[CommandOption("--recursive")]
 			[DefaultValue(true)]
 			public bool Recursive { get; set; }
+
+			[Description("Minimum file size in bytes. Defaults to 1MB.")]
+			[CommandOption("-a|--min")]
+			[DefaultValue(long.MinValue)]
+			public long SizeMin { get; set; }
+
+			[Description("Maximum file size in bytes. Defaults to 0, no limit.")]
+			[CommandOption("-z|--max")]
+			[DefaultValue(long.MaxValue)]
+			public long SizeMax { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -44,7 +54,7 @@ namespace todo.Commands
 				AttributesToSkip = settings.IncludeHidden
 				   ? FileAttributes.Hidden | FileAttributes.System
 				   : FileAttributes.System,
-				RecurseSubdirectories = settings.Recursive
+				RecurseSubdirectories = settings.Recursive,
 			};
 
 			Manager m = new Manager();

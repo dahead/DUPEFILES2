@@ -33,7 +33,7 @@ namespace dupesfiles2.Core
 			var watch = System.Diagnostics.Stopwatch.StartNew();
 
 			// Get files
-			var results = await GetFilesAsync(progress, settings.Path, settings.SearchPattern, cts.Token);
+			var results = await GetFilesAsync(progress, settings, cts.Token);
 
 			// add results to the index
 			foreach (var item in results)
@@ -47,11 +47,11 @@ namespace dupesfiles2.Core
 			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 		}
 
-		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string searchpattern, CancellationToken cancellationToken)
+		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			// setup base search path
-			if (string.IsNullOrWhiteSpace(searchpattern))
-				searchpattern = "*.*";
+			if (string.IsNullOrWhiteSpace(settings.SearchPattern))
+				settings.SearchPattern = "*";
 
 			// create search options
 			var searchOptions = new EnumerationOptions
@@ -62,10 +62,10 @@ namespace dupesfiles2.Core
 
 			// add basedir to dirs
 			var dirs = new List<DirectoryInfo>();
-			dirs.Add(new DirectoryInfo(basepath));
+			dirs.Add(new DirectoryInfo(settings.Path));
 
 			// First get all directories
-			var subdirs = FileTools.EnumerateDirectoriesRecursive(basepath, searchpattern, true);
+			var subdirs = FileTools.EnumerateDirectoriesRecursive(settings.Path, settings.SearchPattern, true);
 			foreach (var item in subdirs)
 			{
 				dirs.Add(item);
@@ -79,7 +79,7 @@ namespace dupesfiles2.Core
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
 				{
-					FileInfo[] results = dir.GetFiles(searchpattern, searchOptions);
+					FileInfo[] results = dir.GetFiles(settings.SearchPattern, searchOptions);
 					output.Add(results);
 
 					cancellationToken.ThrowIfCancellationRequested();
