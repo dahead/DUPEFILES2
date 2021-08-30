@@ -13,8 +13,10 @@ namespace dupesfiles2.Core
 
 		public class ProgressReportModel
 		{
-			public int PercentageComplete { get; set; } = 0;
-			public List<FileInfo[]> Files { get; set; } = new List<FileInfo[]>();
+			// public int PercentageComplete { get; set; } = 0;
+			public string BaseDirectory { get; set; }
+			public int Count { get; set; }
+
 		}
 
 		// public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)

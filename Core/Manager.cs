@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
@@ -28,16 +29,10 @@ namespace dupesfiles2.Core
 		{
 			Progress<ProgressReportModel> progress = new Progress<ProgressReportModel>();
 			progress.ProgressChanged += ReportAddFilesToIndexProgress;
-
-			var searchOptions = new EnumerationOptions
-			{
-				AttributesToSkip = true ? FileAttributes.Hidden | FileAttributes.System : FileAttributes.System,
-				RecurseSubdirectories = true
-			};
+			var watch = System.Diagnostics.Stopwatch.StartNew();
 
 			// Get files
-			var results = await GetFilesAsync(progress, settings.Path, settings.SearchPattern, searchOptions, settings.Recursive, cts.Token);
-			// var results = await FileTools.GetFilesAsync(settings.Path, settings.SearchPattern, searchOptions, settings.Recursive, cts.Token);
+			var results = await GetFilesAsync(progress, settings.Path, settings.SearchPattern, cts.Token);
 
 			// add results to the index
 			foreach (var item in results)
@@ -48,41 +43,63 @@ namespace dupesfiles2.Core
 				}
 			}
 
+			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+
 			// PrintResults(results);
 		}
 
-		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
+		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string searchpattern, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(searchpattern))
 				searchpattern = "*.*";
 
+			var searchOptions = new EnumerationOptions
+			{
+				AttributesToSkip = true ? FileAttributes.Hidden | FileAttributes.System : FileAttributes.System,
+				RecurseSubdirectories = false
+			};
+
+
+			// add basedir to dirs
+			var dirs = new List<DirectoryInfo>();
+			dirs.Add(new DirectoryInfo(basepath));
+
 			// First get all directories
-			var dirs = FileTools.EnumerateDirectoriesRecursive(basepath, searchpattern, recursive);
+			var subdirs = FileTools.EnumerateDirectoriesRecursive(basepath, searchpattern, true);
+			foreach (var item in subdirs)
+			{
+				dirs.Add(item);
+			}
 
 			// then get all files
 			List<FileInfo[]> output = new List<FileInfo[]>();
-			ProgressReportModel report = new ProgressReportModel();
 
 			// Parallel async
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
 				{
-					FileInfo[] results = dir.GetFiles(searchpattern, options);
+					FileInfo[] results = dir.GetFiles(searchpattern, searchOptions);
 					output.Add(results);
 
 					cancellationToken.ThrowIfCancellationRequested();
 
-					report.Files = output;
+					ProgressReportModel report = new ProgressReportModel();
+					report.BaseDirectory = dir.FullName;
+					report.Count = results.Length;
+
 					// report.PercentageComplete = (output.Count * 100) / results.Length;
+
 					progress.Report(report);
 				});
 			});
+
 			return output;
 		}
 
 		private void ReportAddFilesToIndexProgress(object sender, ProgressReportModel e)
 		{
+			AnsiConsole.MarkupLine($" Adding [bold]{ e.Count }[/] files from [red]{ e.BaseDirectory }[/] ");
 			// foreach (var item in e.Files)
 			// {
 			// 	Console.WriteLine($" Adding { e.Files.Count } files...");
@@ -97,7 +114,9 @@ namespace dupesfiles2.Core
 		{
 			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
+			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetHashParallelAsync(progress, this.idx, settings, this.cts.Token);
+			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
 
@@ -136,14 +155,18 @@ namespace dupesfiles2.Core
 
 		private void ReportScanIndexProgress(object sender, ItemDataModel e)
 		{
-			// 
+			AnsiConsole.MarkupLine($" Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
+			// Console.WriteLine($" Hashing file { e.Path } ");
+			// Debug.Print($" Hashing file { e.Path } ");
 		}
 
 		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
 			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
 			progress.ProgressChanged += ReportUpdateIndexProgress;
+			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await UpdateIndexAsync(progress, this.idx, settings, this.cts.Token);
+			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
 
