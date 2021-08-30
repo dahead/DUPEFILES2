@@ -155,14 +155,14 @@ namespace dupesfiles2.Core
 
 		private void ReportScanIndexProgress(object sender, ItemDataModel e)
 		{
-			AnsiConsole.MarkupLine($" Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
+			AnsiConsole.MarkupLine($"Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
 			// Console.WriteLine($" Hashing file { e.Path } ");
 			// Debug.Print($" Hashing file { e.Path } ");
 		}
 
 		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
-			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
+			Progress<IndexUpdateDataModel> progress = new Progress<IndexUpdateDataModel>();
 			progress.ProgressChanged += ReportUpdateIndexProgress;
 			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await UpdateIndexAsync(progress, this.idx, settings, this.cts.Token);
@@ -170,38 +170,51 @@ namespace dupesfiles2.Core
 			return result;
 		}
 
-		internal static async Task<List<ItemDataModel>> UpdateIndexAsync(Progress<ItemDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
+		internal static async Task<List<ItemDataModel>> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			// var report = new List<ItemDataModel>();
-
+			var report = new List<IndexUpdateDataModel>();
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<ItemDataModel>(idx, (item) =>
 				{
+					IndexUpdateDataModel result = new IndexUpdateDataModel() { Path = item.Path };
+
 					if (System.IO.File.Exists(item.Path))
 					{
+						long oldsize = item.Size;
+
 						// Update file size
 						FileInfo fi = new System.IO.FileInfo(item.Path);
-						item.Size = fi.Length;
 
-						// update checksum
-						string checksum = CalculateSHA256(item.Path);
-						item.Hash = checksum;
+						if (oldsize != fi.Length)
+						{
+							// update file size
+							item.Size = fi.Length;
+
+							// update checksum
+							string checksum = CalculateSHA256(item.Path);
+							item.Hash = checksum;
+
+							result.Action = "Updating size and hash.";
+						}
 					}
 					else
 					{
 						// idx.Remove(item);
+						result.Action = "Removing entry";
 						item.Path = string.Empty;
 					}
+					report.Add(result);
 
 					cancellationToken.ThrowIfCancellationRequested();
 
 					// report progress
-					// progress.Report(result);
+					progress.Report(result);
 
 				});
 			});
 
+			// remove non existing entries
 			await Task.Run(() =>
 			{
 				for (int i = idx.Count - 1; i >= 0; i--)
@@ -213,21 +226,22 @@ namespace dupesfiles2.Core
 				}
 			});
 
+			// todo: add new directories/files
+
 			// return
-			//return report;
-			return null;
+			return idx;
+			// return report;
 		}
 
-		private void ReportUpdateIndexProgress(object sender, ItemDataModel e)
+		private void ReportUpdateIndexProgress(object sender, IndexUpdateDataModel e)
 		{
-			// 
+			AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
 		}
 
 		internal void Dispose()
 		{
 			IndexDataModel.SaveToFile(this.idx);
 		}
-
 
 		private void PrintResults(List<FileInfo[]> results)
 		{

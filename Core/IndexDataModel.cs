@@ -68,4 +68,10 @@ namespace todo.Core
 		public string Hash { get; set; }
 	}
 
+	public class IndexUpdateDataModel
+	{
+		public string Path { get; set; }
+		public string Action { get; set; }
+	}
+
 }
