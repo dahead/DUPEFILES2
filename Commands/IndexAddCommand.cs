@@ -35,7 +35,7 @@ namespace todo.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
-
+			// use current directory if none given
 			if (string.IsNullOrEmpty(settings.Path))
 				settings.Path = Environment.CurrentDirectory;
 
