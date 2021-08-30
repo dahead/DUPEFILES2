@@ -9,7 +9,7 @@ using Spectre.Console.Cli;
 
 namespace todo.Commands
 {
-	[Description("Add a todo item.")]
+	[Description("Add files to the index.")]
 	public sealed class IndexAddCommand : AsyncCommand<IndexAddCommand.Settings>
 	{
 		public sealed class Settings : CommandSettings

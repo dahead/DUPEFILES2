@@ -8,7 +8,7 @@ using Spectre.Console.Cli;
 
 namespace todo.Commands
 {
-	[Description("Add a todo item.")]
+	[Description("Update the index.")]
 	public sealed class IndexUpdateCommand : AsyncCommand<IndexUpdateCommand.Settings>
 	{
 		public sealed class Settings : CommandSettings

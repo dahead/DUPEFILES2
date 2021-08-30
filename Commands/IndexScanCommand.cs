@@ -10,24 +10,24 @@ using todo.Core;
 
 namespace todo.Commands
 {
-	[Description("Add a todo item.")]
+	[Description("Scans the index for duplicate files.")]
 	public sealed class IndexScanCommand : AsyncCommand<IndexScanCommand.Settings>
 	{
 		public sealed class Settings : CommandSettings
 		{
-			// [Description("Scan pattern. Defaults to *.* (every file).")]
-			// [CommandOption("-p|--pattern")]
-			// public string Pattern { get; set; }
+			[Description("Scan pattern. Defaults to *.* (every file).")]
+			[CommandOption("-p|--pattern")]
+			public string Pattern { get; set; }
 
-			// [Description("Lowest file size in bytes. Defaults to 1MB.")]
-			// [CommandOption("-l|--low")]
-			// [DefaultValue(1024 * 1024)]
-			// public int SizeMin { get; set; }
+			[Description("Lowest file size in bytes. Defaults to 1MB.")]
+			[CommandOption("-l|--low")]
+			[DefaultValue(1024 * 1024)]
+			public int SizeMin { get; set; }
 
-			// [Description("Highest file size in bytes. Defaults to 0, no limit.")]
-			// [CommandOption("-h|--high")]
-			// [DefaultValue(0)]
-			// public int SizeMax { get; set; }
+			[Description("Highest file size in bytes. Defaults to 0, no limit.")]
+			[CommandOption("-h|--high")]
+			[DefaultValue(0)]
+			public int SizeMax { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)

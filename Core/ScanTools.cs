@@ -19,7 +19,8 @@ namespace dupesfiles2.Core
 			{
 				Parallel.ForEach<ItemDataModel>(idx, (item) =>
 				{
-					string checksum = CalculateMD5(item.Path);
+					// string checksum = CalculateMD5(item.Path);
+					string checksum = CalculateSHA256(item.Path);
 					// ItemDataModel result = new ItemDataModel() { Path = item.Path, Hash = checksum };
 					// report.Add(result);
 					item.Hash = checksum;
@@ -36,12 +37,12 @@ namespace dupesfiles2.Core
 		{
 			try
 			{
-				using (var sha = MD5.Create())
+				using (var hash = MD5.Create())
 				{
 					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
 					{
-						var hash = sha.ComputeHash(stream);
-						return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+						var result = hash.ComputeHash(stream);
+						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
 					}
 				}
 			}
@@ -55,12 +56,12 @@ namespace dupesfiles2.Core
 		{
 			try
 			{
-				using (var sha = SHA256.Create())
+				using (var hash = SHA256.Create())
 				{
 					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
 					{
-						var hash = sha.ComputeHash(stream);
-						return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+						var result = hash.ComputeHash(stream);
+						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
 					}
 				}
 			}
