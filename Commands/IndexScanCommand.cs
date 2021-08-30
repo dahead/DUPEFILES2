@@ -34,10 +34,18 @@ namespace todo.Commands
 		{
 			Manager m = new Manager();
 			await AnsiConsole.Status()
-			.StartAsync("Scanning the index...", async ctx =>
+			.StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
 			{
 				await m.ScanIndex(settings);
 			});
+
+			await AnsiConsole.Status()
+			.StartAsync("Scanning the index for binary duplicates...", async ctx =>
+			{
+				await m.CompareIndex(settings);
+			});
+
+
 			m.Dispose();
 			return 0;
 		}

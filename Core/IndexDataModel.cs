@@ -74,4 +74,10 @@ namespace todo.Core
 		public string Action { get; set; }
 	}
 
+	public class CompareIndexModel
+	{
+		public string File1 { get; set; }
+		public string File2 { get; set; }
+		public bool Identical { get; set; }
+	}
 }

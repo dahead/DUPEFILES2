@@ -21,6 +21,8 @@ namespace dupesfiles2.Core
 
 		// public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
 
+		public const int BinaryCompareBufferSize = 4096;
+		public const int HashBufferSize = 1200000;
 
 		public static IEnumerable<DirectoryInfo> EnumerateDirectoriesRecursive(string basepath, string pattern, EnumerationOptions searchoptions, bool recursive = true)
 		{
@@ -83,7 +85,7 @@ namespace dupesfiles2.Core
 			{
 				using (var hash = MD5.Create())
 				{
-					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
+					using (var stream = new BufferedStream(File.OpenRead(filename), HashBufferSize))
 					{
 						var result = hash.ComputeHash(stream);
 						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
@@ -102,7 +104,7 @@ namespace dupesfiles2.Core
 			{
 				using (var hash = SHA256.Create())
 				{
-					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
+					using (var stream = new BufferedStream(File.OpenRead(filename), HashBufferSize))
 					{
 						var result = hash.ComputeHash(stream);
 						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
@@ -112,6 +114,38 @@ namespace dupesfiles2.Core
 			catch (System.Exception)
 			{
 				return "n/a";
+			}
+		}
+
+		public static bool BinaryCompareFiles(string file1, string file2)
+		{
+			const int bufferSize = BinaryCompareBufferSize;
+			var buffer1 = new byte[bufferSize];
+			var buffer2 = new byte[bufferSize];
+
+			using (FileStream fs1 = System.IO.File.OpenRead(file1))
+			using (FileStream fs2 = System.IO.File.OpenRead(file2))
+			{
+				while (true)
+				{
+					int count1 = fs1.Read(buffer1, 0, bufferSize);
+					int count2 = fs2.Read(buffer2, 0, bufferSize);
+
+					if (count1 != count2)
+						return false;
+
+					if (count1 == 0)
+						return true;
+
+					int iterations = (int)Math.Ceiling((double)count1 / sizeof(Int64));
+					for (int i = 0; i < iterations; i++)
+					{
+						if (BitConverter.ToInt64(buffer1, i * sizeof(Int64)) != BitConverter.ToInt64(buffer2, i * sizeof(Int64)))
+						{
+							return false;
+						}
+					}
+				}
 			}
 		}
 

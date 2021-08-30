@@ -129,7 +129,8 @@ namespace dupesfiles2.Core
 					// Only when we have more than one file
 					if (g.Count() > 1)
 					{
-						foreach (var sub in g)
+						var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
+						foreach (var sub in filtered)
 						{
 							// string checksum = CalculateMD5(item.Path);
 							string checksum = CalculateSHA256(sub.Path);
@@ -157,6 +158,83 @@ namespace dupesfiles2.Core
 			// Console.WriteLine($" Hashing file { e.Path } ");
 			// Debug.Print($" Hashing file { e.Path } ");
 		}
+
+
+
+		public async Task<List<CompareIndexModel>> CompareIndex(IndexScanCommand.Settings settings)
+		{
+			Progress<CompareIndexModel> progress = new Progress<CompareIndexModel>();
+			progress.ProgressChanged += ReportCompareIndexProgress;
+			var watch = System.Diagnostics.Stopwatch.StartNew();
+			var result = await GetBinaryParallelAsync(progress, this.idx, settings, this.cts.Token);
+			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			return result;
+		}
+
+
+		public static async Task<List<CompareIndexModel>> GetBinaryParallelAsync(IProgress<CompareIndexModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
+		{
+			var report = new List<CompareIndexModel>();
+
+			IEnumerable<IGrouping<string, ItemDataModel>> filehashduplicates =
+				idx.GroupBy(f => f.Hash, f => f);
+
+			await Task.Run(() =>
+			{
+				Parallel.ForEach<IGrouping<string, ItemDataModel>>(filehashduplicates, (g) =>
+				{
+
+					if (g.Count() > 1 && !string.IsNullOrWhiteSpace(g.Key))
+						for (int i = 0; i < g.ToList().Count() - 1; i++)
+						{
+							var cur = g.ToList()[i];
+							var next = g.ToList()[i + 1];
+
+							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
+
+							CompareIndexModel result = new CompareIndexModel() { File1 = cur.Path, File2 = next.Path, Identical = identical };
+							report.Add(result);
+
+							cancellationToken.ThrowIfCancellationRequested();
+
+							// report progress
+							progress.Report(result);
+						}
+
+					// // Only when we have more than one file
+					// if (g.Count() > 1)
+					// {
+					// 	foreach (var sub in g)
+					// 	{
+					// 		// bool identical = FileTools.BinaryCompareFiles(sub.Path);
+					// 		CompareIndexModel result = new CompareIndexModel() { };
+					// 		report.Add(result);
+
+					// 		// remember the hash
+					// 		// sub.Hash = checksum;
+
+					// 		cancellationToken.ThrowIfCancellationRequested();
+
+					// 		// report progress
+					// 		progress.Report(result);
+					// 	}
+					// }
+
+				});
+			});
+
+			return report;
+		}
+
+
+		private void ReportCompareIndexProgress(object sender, CompareIndexModel e)
+		{
+			AnsiConsole.MarkupLine($"Binary comparism of { e.File1 } and { e.File2 } [bold]{ e.Identical }[/]");
+		}
+
+
+
+
 
 		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
@@ -235,6 +313,7 @@ namespace dupesfiles2.Core
 		{
 			AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
 		}
+
 
 		internal void Dispose()
 		{
