@@ -37,7 +37,7 @@ namespace todo.Commands
 		{
 
 			if (string.IsNullOrEmpty(settings.Path))
-				return 0;
+				settings.Path = Environment.CurrentDirectory;
 
 			var searchOptions = new EnumerationOptions
 			{
@@ -46,7 +46,6 @@ namespace todo.Commands
 				   : FileAttributes.System,
 				RecurseSubdirectories = settings.Recursive
 			};
-
 
 			Manager m = new Manager();
 			int before = m.idx.Count;

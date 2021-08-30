@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using todo.Core;
@@ -16,36 +17,10 @@ namespace dupesfiles2.Core
 			public List<FileInfo[]> Files { get; set; } = new List<FileInfo[]>();
 		}
 
-		// public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, string basepath, string pattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
-		public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
-		{
-			if (string.IsNullOrWhiteSpace(searchpattern))
-				searchpattern = "*.*";
+		// public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
 
-			// First get all directories
-			var dirs = EnumerateDirectoriesRecursive(basepath, searchpattern, recursive);
 
-			// then get all files
-			List<FileInfo[]> output = new List<FileInfo[]>();
-			// ProgressReportModel report = new ProgressReportModel();
-
-			// Parallel async
-			await Task.Run(() =>
-			{
-				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
-				{
-					FileInfo[] results = dir.GetFiles(searchpattern, options);
-					output.Add(results);
-					cancellationToken.ThrowIfCancellationRequested();
-					// report.Files = output;
-					// report.PercentageComplete = (output.Count * 100) / results.Length;
-					// progress.Report(report);
-				});
-			});
-			return output;
-		}
-
-		private static IEnumerable<DirectoryInfo> EnumerateDirectoriesRecursive(string basepath, string pattern, bool recursive = true)
+		public static IEnumerable<DirectoryInfo> EnumerateDirectoriesRecursive(string basepath, string pattern, bool recursive = true)
 		{
 			var todo = new Queue<string>();
 			todo.Enqueue(basepath);
@@ -98,6 +73,44 @@ namespace dupesfiles2.Core
 				}
 			}
 
+		}
+
+		public static string CalculateMD5(string filename)
+		{
+			try
+			{
+				using (var hash = MD5.Create())
+				{
+					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
+					{
+						var result = hash.ComputeHash(stream);
+						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
+					}
+				}
+			}
+			catch (System.Exception)
+			{
+				return "n/a";
+			}
+		}
+
+		public static string CalculateSHA256(string filename)
+		{
+			try
+			{
+				using (var hash = SHA256.Create())
+				{
+					using (var stream = new BufferedStream(File.OpenRead(filename), 1200000))
+					{
+						var result = hash.ComputeHash(stream);
+						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
+					}
+				}
+			}
+			catch (System.Exception)
+			{
+				return "n/a";
+			}
 		}
 
 	}

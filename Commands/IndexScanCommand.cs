@@ -19,15 +19,15 @@ namespace todo.Commands
 			[CommandOption("-p|--pattern")]
 			public string Pattern { get; set; }
 
-			[Description("Lowest file size in bytes. Defaults to 1MB.")]
-			[CommandOption("-l|--low")]
-			[DefaultValue(1024 * 1024)]
-			public int SizeMin { get; set; }
+			[Description("Minimum file size in bytes. Defaults to 1MB.")]
+			[CommandOption("-a|--min")]
+			[DefaultValue(long.MinValue)]
+			public long SizeMin { get; set; }
 
-			[Description("Highest file size in bytes. Defaults to 0, no limit.")]
-			[CommandOption("-h|--high")]
-			[DefaultValue(0)]
-			public int SizeMax { get; set; }
+			[Description("Maximum file size in bytes. Defaults to 0, no limit.")]
+			[CommandOption("-z|--max")]
+			[DefaultValue(long.MaxValue)]
+			public long SizeMax { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
