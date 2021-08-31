@@ -11,7 +11,7 @@ namespace dupesfiles2
 
 	class Program
 	{
-		private const string cAppName = "df2";
+		private const string cAppName = "DF2";
 
 		public static async Task<int> Main(string[] args)
 		{

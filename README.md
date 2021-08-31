@@ -1,9 +1,14 @@
 # DUPEFILES 2
 
-DUPEFILES 2 scans your file system for duplicate files.
-DUPEFILES 2 is a csharp dotnet core application which runs under windows, linux and probably osx.
+DUPEFILES 2 is a c# .NET Core application which runs under linux, windows and probably mac. 
 
-DUPEFILES 2 checks files for for file size, hash and finally binary.
+It scans your file system for duplicate files and helps you save space by removing the duplicates you want to.
+
+## FEATURES
+
+- Open: OS .NET Core CLI Application
+- Flexible: Runs under linux/mac/windows
+- Fast: Parallel and async file operations
 
 ## COMMANDS
 
@@ -25,3 +30,9 @@ Updates the index and removes non existing files.
     index-scan
 
 Scans the index for duplicate files.
+
+
+## TODO
+
+- Command: index-purge-duplictes...
+- Command: export results
