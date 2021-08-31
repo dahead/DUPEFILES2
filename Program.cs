@@ -2,10 +2,9 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-using dupesfiles2.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using todo.Commands;
+using dupesfiles2.Commands;
 
 namespace dupesfiles2
 {
@@ -36,7 +35,7 @@ namespace dupesfiles2
 				config.AddCommand<IndexUpdateCommand>("index-update")
 					   .WithAlias("update")
 					   .WithAlias("iu")
-					   .WithDescription("Refreshes the index content.");
+					   .WithDescription("Refreshes the index.");
 
 				config.AddCommand<IndexScanCommand>("index-scan")
 					   .WithAlias("scan")

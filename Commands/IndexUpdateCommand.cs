@@ -1,13 +1,11 @@
 using System;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using dupesfiles2.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using dupesfiles2.Core;
 
-namespace todo.Commands
+namespace dupesfiles2.Commands
 {
 	[Description("Update the index.")]
 	public sealed class IndexUpdateCommand : AsyncCommand<IndexUpdateCommand.Settings>

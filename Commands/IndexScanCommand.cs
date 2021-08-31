@@ -1,14 +1,11 @@
 using System;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using dupesfiles2.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using todo.Core;
+using dupesfiles2.Core;
 
-namespace todo.Commands
+namespace dupesfiles2.Commands
 {
 	[Description("Scans the index for duplicate files.")]
 	public sealed class IndexScanCommand : AsyncCommand<IndexScanCommand.Settings>

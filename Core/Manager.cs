@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Spectre.Console;
-using todo.Commands;
-using todo.Core;
+using dupesfiles2.Commands;
 using static dupesfiles2.Core.FileTools;
-using static todo.Commands.IndexAddCommand;
 
 namespace dupesfiles2.Core
 {
@@ -302,18 +298,27 @@ namespace dupesfiles2.Core
 			});
 
 			// todo: add new directories/files
+			// create unique dir list
+			// check for each dir if we have all files.
 
-			// return
 			return idx;
-			// return report;
 		}
 
 		private void ReportUpdateIndexProgress(object sender, IndexUpdateDataModel e)
 		{
-			AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
+			try
+			{
+				AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
+			}
+			catch (System.Exception)
+			{
+				// Spectre.Console
+				// Sometimes there are invalid characters				
+				// System.InvalidOperationException: Could not find color or style 'MV'.
+				//    at Spectre.Console.StyleParser.Parse(String text) in / _ / src / Spectre.Console / StyleParser.cs:line 16
+			}
 		}
 
 		#endregion
-
 	}
 }

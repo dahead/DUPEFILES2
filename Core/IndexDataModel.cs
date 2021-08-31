@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace todo.Core
+namespace dupesfiles2.Core
 {
 
 	public class IndexDataModel : List<IndexItemDataModel>

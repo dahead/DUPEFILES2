@@ -7,7 +7,7 @@ using dupesfiles2.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace todo.Commands
+namespace dupesfiles2.Commands
 {
 	[Description("Add files to the index.")]
 	public sealed class IndexAddCommand : AsyncCommand<IndexAddCommand.Settings>
