@@ -10,6 +10,7 @@ DUPEFILES 2 checks files for for file size, hash and finally binary.
 ### index-add
 
     index-add [PATH]
+    index-add ~/Downloads
 
 Adds files to the index.
 

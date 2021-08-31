@@ -26,7 +26,14 @@ namespace dupesfiles2.Core
 			this.idx = IndexDataModel.LoadFromFile();
 		}
 
-		public async Task AddFilesToIndex(IndexAddCommand.Settings settings)
+		internal void Dispose()
+		{
+			IndexDataModel.SaveToFile(this.idx);
+		}
+
+		#region "Add files"
+
+		public async Task<List<FileInfo[]>> AddFilesToIndex(IndexAddCommand.Settings settings)
 		{
 			Progress<ProgressReportModel> progress = new Progress<ProgressReportModel>();
 			progress.ProgressChanged += ReportAddFilesToIndexProgress;
@@ -45,6 +52,8 @@ namespace dupesfiles2.Core
 			}
 
 			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+
+			return results;
 		}
 
 		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
@@ -101,6 +110,10 @@ namespace dupesfiles2.Core
 			AnsiConsole.MarkupLine($" Adding [bold]{ e.Count }[/] files from [red]{ e.BaseDirectory }[/] ");
 		}
 
+		#endregion
+
+		#region "Scan index"
+
 		public async Task<List<ItemDataModel>> ScanIndex(IndexScanCommand.Settings settings)
 		{
 			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
@@ -114,10 +127,6 @@ namespace dupesfiles2.Core
 		public static async Task<List<ItemDataModel>> GetHashParallelAsync(IProgress<ItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			var report = new List<ItemDataModel>();
-
-			// Todo: make use of the settings
-			// var fsmin = idx.Where(t => t.Size > 0 && t.Size < settings.SizeMax);
-			// var fspat = fsmin.Where(t => t.Path.Contains(settings.Pattern));
 
 			IEnumerable<IGrouping<long, ItemDataModel>> filesizeduplicates =
 				idx.GroupBy(f => f.Size, f => f);
@@ -155,11 +164,11 @@ namespace dupesfiles2.Core
 		private void ReportScanIndexProgress(object sender, ItemDataModel e)
 		{
 			AnsiConsole.MarkupLine($"Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
-			// Console.WriteLine($" Hashing file { e.Path } ");
-			// Debug.Print($" Hashing file { e.Path } ");
 		}
 
+		#endregion
 
+		#region "Compare index"
 
 		public async Task<List<CompareIndexModel>> CompareIndex(IndexScanCommand.Settings settings)
 		{
@@ -170,7 +179,6 @@ namespace dupesfiles2.Core
 			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
-
 
 		public static async Task<List<CompareIndexModel>> GetBinaryParallelAsync(IProgress<CompareIndexModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
@@ -204,46 +212,30 @@ namespace dupesfiles2.Core
 							// report progress
 							progress.Report(result);
 						}
-
-					// // Only when we have more than one file
-					// if (g.Count() > 1)
-					// {
-					// 	foreach (var sub in g)
-					// 	{
-					// 		// bool identical = FileTools.BinaryCompareFiles(sub.Path);
-					// 		CompareIndexModel result = new CompareIndexModel() { };
-					// 		report.Add(result);
-
-					// 		// remember the hash
-					// 		// sub.Hash = checksum;
-
-					// 		cancellationToken.ThrowIfCancellationRequested();
-
-					// 		// report progress
-					// 		progress.Report(result);
-					// 	}
-					// }
-
 				});
 			});
 
 			return report;
 		}
 
-
 		private void ReportCompareIndexProgress(object sender, CompareIndexModel e)
 		{
 			switch (e.Identical)
 			{
 				case true:
-					AnsiConsole.MarkupLine($"Binary comparism of [green]{ e.File1 }[/] and [green]{ e.File2 }[/] [red bold]{ e.Identical }[/]");
+					AnsiConsole.MarkupLine($"[red bold]DUPE[/] [grey]{ e.File1 }[/] and [grey]{ e.File2 }[/]");
 					break;
-				case false:
-					// AnsiConsole.MarkupLine($"Binary comparism of { e.File1 } and { e.File2 } [bold]{ e.Identical }[/]");
-					break;
+				// case false:
+				// 	AnsiConsole.MarkupLine($"[grey]nodupe[/] [green]{ e.File1 }[/] and [green]{ e.File2 }[/] [yellow bold]{ e.Identical }[/]");
+				// 	break;
 				default:
+					break;
 			}
 		}
+
+		#endregion
+
+		#region "Update index"
 
 		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
@@ -323,10 +315,7 @@ namespace dupesfiles2.Core
 			AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
 		}
 
+		#endregion
 
-		internal void Dispose()
-		{
-			IndexDataModel.SaveToFile(this.idx);
-		}
 	}
 }
