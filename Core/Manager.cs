@@ -308,7 +308,10 @@ namespace dupesfiles2.Core
 		{
 			try
 			{
-				AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
+				if (!string.IsNullOrWhiteSpace(e.Action))
+				{
+					AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
+				}
 			}
 			catch (System.Exception)
 			{
