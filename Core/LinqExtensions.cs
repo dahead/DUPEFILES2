@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace dupesfiles2
+namespace dupefiles2
 {
 	public static class LinqExtensions
 	{

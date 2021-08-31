@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using dupesfiles2.Core;
+using dupefiles2.Core;
 
-namespace dupesfiles2.Commands
+namespace dupefiles2.Commands
 {
 	[Description("Scans the index for duplicate files.")]
 	public sealed class IndexScanCommand : AsyncCommand<IndexScanCommand.Settings>
@@ -29,7 +29,32 @@ namespace dupesfiles2.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
+
 			Manager m = new Manager();
+			// await m.IndexScanHash(settings);
+			// await m.IndexCompareBinary(settings);
+
+
+			// m.IndexScanHash(settings);
+			// m.IndexCompareBinary(settings);
+
+			// await AnsiConsole.Progress()
+			// .StartAsync(async ctx =>
+			// {
+			// 	// Define tasks
+			// 	var task1 = ctx.AddTask("[green]Hash check[/]");
+			// 	var task2 = ctx.AddTask("[green]Binary check[/]");
+
+			// 	// await m.IndexScanHash(settings);
+			// 	// await m.IndexCompareBinary(settings);
+
+			// 	while (!ctx.IsFinished)
+			// 	{
+			// 		task1.Increment(1.5);
+			// 		task2.Increment(0.5);
+			// 	}
+			// });
+
 
 			// hash
 			await AnsiConsole.Status()
@@ -47,8 +72,30 @@ namespace dupesfiles2.Commands
 
 			// save and return
 			m.Dispose();
+
 			return 0;
 		}
+
+		// private void Start(Settings settings)
+		// {
+		// 	Manager m = new Manager();
+
+		// 	// hash
+		// 	AnsiConsole.Status()
+		// 	.Start("Scanning the index for size and hash duplicates...", ctx =>
+		// 	{
+		// 		m.IndexScanHash(settings);
+		// 	});
+
+		// 	// binary
+		// 	AnsiConsole.Status()
+		// 	.Start("Scanning the index for binary duplicates...", ctx =>
+		// 	{
+		// 		m.IndexCompareBinary(settings);
+		// 	});
+
+		// 	m.Dispose();
+		// }
 
 
 	}

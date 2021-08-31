@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace dupesfiles2.Core
+namespace dupefiles2.Core
 {
 
 	public class IndexDataModel : List<IndexItemDataModel>
@@ -84,8 +84,10 @@ namespace dupesfiles2.Core
 
 	public class IndexCompareDataModel
 	{
+		public string Hash { get; set; }
 		public string File1 { get; set; }
 		public string File2 { get; set; }
 		public bool Identical { get; set; }
+		public long Size { get; set; }
 	}
 }

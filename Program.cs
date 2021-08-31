@@ -4,9 +4,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using dupesfiles2.Commands;
+using dupefiles2.Commands;
 
-namespace dupesfiles2
+namespace dupefiles2
 {
 
 	class Program

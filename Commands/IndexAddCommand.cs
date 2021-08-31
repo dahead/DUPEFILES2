@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using dupesfiles2.Core;
+using dupefiles2.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace dupesfiles2.Commands
+namespace dupefiles2.Commands
 {
 	[Description("Add files to the index.")]
 	public sealed class IndexAddCommand : AsyncCommand<IndexAddCommand.Settings>

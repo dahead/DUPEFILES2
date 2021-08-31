@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Spectre.Console;
-using dupesfiles2.Commands;
-using static dupesfiles2.Core.FileTools;
+using dupefiles2.Commands;
+using static dupefiles2.Core.FileTools;
 
-namespace dupesfiles2.Core
+namespace dupefiles2.Core
 {
 	public class Manager
 	{
@@ -33,7 +33,7 @@ namespace dupesfiles2.Core
 		{
 			Progress<IndexAddDataModel> progress = new Progress<IndexAddDataModel>();
 			progress.ProgressChanged += ReportAddFilesToIndexProgress;
-			var watch = System.Diagnostics.Stopwatch.StartNew();
+			// var watch = System.Diagnostics.Stopwatch.StartNew();
 
 			// Get files
 			var results = await GetFilesAsync(progress, settings, cts.Token);
@@ -47,7 +47,7 @@ namespace dupesfiles2.Core
 				}
 			}
 
-			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 
 			return results;
 		}
@@ -112,9 +112,9 @@ namespace dupesfiles2.Core
 		{
 			Progress<IndexItemDataModel> progress = new Progress<IndexItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
-			var watch = System.Diagnostics.Stopwatch.StartNew();
+			// var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetHashParallelAsync(progress, this.idx, settings, this.cts.Token);
-			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
 
@@ -168,10 +168,40 @@ namespace dupesfiles2.Core
 		{
 			Progress<IndexCompareDataModel> progress = new Progress<IndexCompareDataModel>();
 			progress.ProgressChanged += ReportCompareIndexProgress;
-			var watch = System.Diagnostics.Stopwatch.StartNew();
+			// var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetBinaryParallelAsync(progress, this.idx, settings, this.cts.Token);
-			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			PrintIndexCompareResults(result);
 			return result;
+		}
+
+		private static void PrintIndexCompareResults(List<IndexCompareDataModel> result)
+		{
+
+			var group = result.Where(t => t.Identical == true).GroupBy(f => f.Hash, f => f);
+
+			if (group.Count() == 0)
+			{
+				AnsiConsole.MarkupLine("[green]No duplicates found in the index.[/]");
+				return;
+			}
+
+			foreach (var item in group)
+			{
+				if (item.Count() == 0)
+				{
+					continue;
+				}
+				var first = item.ToList()[0];
+				AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
+				foreach (var sub in item)
+				{
+					AnsiConsole.MarkupLine($":white_small_square: { sub.File1 }");
+					AnsiConsole.MarkupLine($":white_small_square: { sub.File2 }");
+				}
+
+			}
+
 		}
 
 		private static async Task<List<IndexCompareDataModel>> GetBinaryParallelAsync(IProgress<IndexCompareDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
@@ -200,7 +230,7 @@ namespace dupesfiles2.Core
 
 							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
 
-							IndexCompareDataModel result = new IndexCompareDataModel() { File1 = cur.Path, File2 = next.Path, Identical = identical };
+							IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, File1 = cur.Path, File2 = next.Path, Identical = identical };
 							report.Add(result);
 
 							cancellationToken.ThrowIfCancellationRequested();
@@ -237,9 +267,9 @@ namespace dupesfiles2.Core
 		{
 			Progress<IndexUpdateDataModel> progress = new Progress<IndexUpdateDataModel>();
 			progress.ProgressChanged += ReportUpdateIndexProgress;
-			var watch = System.Diagnostics.Stopwatch.StartNew();
+			// var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await UpdateIndexAsync(progress, this.idx, settings, this.cts.Token);
-			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
 
