@@ -31,13 +31,16 @@ namespace dupefiles2.Commands
 		{
 
 			Manager m = new Manager();
+
+			// Variant 1: never any problems, no display.
 			// await m.IndexScanHash(settings);
 			// await m.IndexCompareBinary(settings);
 
-
+			// Variant 2:
 			// m.IndexScanHash(settings);
 			// m.IndexCompareBinary(settings);
 
+			// Test with Progress			
 			// await AnsiConsole.Progress()
 			// .StartAsync(async ctx =>
 			// {
@@ -56,14 +59,13 @@ namespace dupefiles2.Commands
 			// });
 
 
-			// hash
+			// Sometimes these cause problems, BUT ONLY DURING DEBUGGING ???
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
 			{
 				await m.IndexScanHash(settings);
 			});
 
-			// binary
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for binary duplicates...", async ctx =>
 			{
