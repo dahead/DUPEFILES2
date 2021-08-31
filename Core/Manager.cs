@@ -185,7 +185,6 @@ namespace dupesfiles2.Core
 			{
 				Parallel.ForEach<IGrouping<string, IndexItemDataModel>>(filehashduplicates, (g) =>
 				{
-
 					if (g.Count() > 1 && !string.IsNullOrWhiteSpace(g.Key))
 						for (int i = 0; i < g.ToList().Count() - 1; i++)
 						{
@@ -195,6 +194,9 @@ namespace dupesfiles2.Core
 							// dont compare the file with itself
 							if (cur.Path == next.Path)
 								continue;
+
+							// AnsiConsole.WriteLine($"File: { cur.Path } { next.Path }");
+							// AnsiConsole.WriteLine($"Hash: { cur.Hash } { next.Hash }");
 
 							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
 
