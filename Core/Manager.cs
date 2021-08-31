@@ -190,6 +190,10 @@ namespace dupesfiles2.Core
 							var cur = g.ToList()[i];
 							var next = g.ToList()[i + 1];
 
+							// dont compare the file with itself
+							if (cur.Path == next.Path)
+								continue;
+
 							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
 
 							CompareIndexModel result = new CompareIndexModel() { File1 = cur.Path, File2 = next.Path, Identical = identical };
@@ -229,12 +233,17 @@ namespace dupesfiles2.Core
 
 		private void ReportCompareIndexProgress(object sender, CompareIndexModel e)
 		{
-			AnsiConsole.MarkupLine($"Binary comparism of { e.File1 } and { e.File2 } [bold]{ e.Identical }[/]");
+			switch (e.Identical)
+			{
+				case true:
+					AnsiConsole.MarkupLine($"Binary comparism of [green]{ e.File1 }[/] and [green]{ e.File2 }[/] [red bold]{ e.Identical }[/]");
+					break;
+				case false:
+					// AnsiConsole.MarkupLine($"Binary comparism of { e.File1 } and { e.File2 } [bold]{ e.Identical }[/]");
+					break;
+				default:
+			}
 		}
-
-
-
-
 
 		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
