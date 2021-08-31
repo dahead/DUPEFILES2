@@ -50,14 +50,15 @@ namespace todo.Commands
 				settings.Path = Environment.CurrentDirectory;
 
 			Manager m = new Manager();
-			int before = m.idx.Count;
+			// int before = m.idx.Count;
 			await AnsiConsole.Status()
 			.StartAsync("Adding files to the index...", async ctx =>
 			{
 				await m.IndexAdd(settings);
 			});
-			int diff = m.idx.Count - before;
-			AnsiConsole.MarkupLine($"Added [green]{ diff }[/] files to the index.");
+			// int diff = m.idx.Count - before;
+			// AnsiConsole.MarkupLine($"Added [green]{ diff }[/] files to the index.");
+
 			m.Dispose();
 			return 0;
 		}

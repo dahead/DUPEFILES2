@@ -19,7 +19,7 @@ namespace dupesfiles2.Core
 
 		CancellationTokenSource cts = new CancellationTokenSource();
 
-		public IndexDataModel idx { get; set; } = new IndexDataModel();
+		private IndexDataModel idx { get; set; } = new IndexDataModel();
 
 		public Manager()
 		{
@@ -58,29 +58,26 @@ namespace dupesfiles2.Core
 
 		private static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<IndexAddDataModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			// setup base search path
+			// Setup base search path
 			if (string.IsNullOrWhiteSpace(settings.SearchPattern))
 				settings.SearchPattern = "*";
 
-			// create search options
+			// Create search options
 			var searchOptions = new EnumerationOptions
 			{
 				AttributesToSkip = true ? FileAttributes.Hidden | FileAttributes.System : FileAttributes.System,
 				RecurseSubdirectories = false
 			};
 
-			// add basedir to dirs
+			// Add the base directory to the dirs list
 			var dirs = new List<DirectoryInfo>();
 			dirs.Add(new DirectoryInfo(settings.Path));
 
-			// First get all directories
+			// First get all directories...
 			var subdirs = FileTools.EnumerateDirectoriesRecursive(settings.Path, settings.SearchPattern, searchOptions, true);
 			foreach (var item in subdirs)
-			{
 				dirs.Add(item);
-			}
-
-			// then get all files
+			// ...then get all files
 			List<FileInfo[]> output = new List<FileInfo[]>();
 
 			// Parallel async
@@ -88,6 +85,7 @@ namespace dupesfiles2.Core
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
 				{
+					// get files in THIS directory ONLY. NON recursive!
 					FileInfo[] results = dir.GetFiles(settings.SearchPattern, searchOptions);
 					output.Add(results);
 
