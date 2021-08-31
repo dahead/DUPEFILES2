@@ -8,10 +8,13 @@ DUPEFILES 2 checks files for for file size, hash and finally binary.
 ### COMMANDS
 
     index-add [PATH]
-    Adds files to the index.
+
+Adds files to the index.
 
     index-update
-    Updates the index and removes non existing files.
+
+Updates the index and removes non existing files.
 
     index-scan
-    Scans the index for duplicate files.
+
+Scans the index for duplicate files.
