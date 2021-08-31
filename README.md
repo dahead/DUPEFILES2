@@ -7,13 +7,19 @@ DUPEFILES 2 checks files for for file size, hash and finally binary.
 
 ### COMMANDS
 
+## index-add
+
     index-add [PATH]
 
 Adds files to the index.
 
+## index-update
+
     index-update
 
 Updates the index and removes non existing files.
+
+## index-scan
 
     index-scan
 
