@@ -54,7 +54,7 @@ namespace todo.Commands
 			await AnsiConsole.Status()
 			.StartAsync("Adding files to the index...", async ctx =>
 			{
-				await m.AddFilesToIndex(settings);
+				await m.IndexAdd(settings);
 			});
 			int diff = m.idx.Count - before;
 			AnsiConsole.MarkupLine($"Added [green]{ diff }[/] files to the index.");

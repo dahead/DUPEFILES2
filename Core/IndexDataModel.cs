@@ -11,7 +11,7 @@ using Spectre.Console.Cli;
 namespace todo.Core
 {
 
-	public class IndexDataModel : List<ItemDataModel>
+	public class IndexDataModel : List<IndexItemDataModel>
 	{
 
 		public const string DefaultFilename = "index.json";
@@ -61,11 +61,19 @@ namespace todo.Core
 
 	}
 
-	public class ItemDataModel
+	public class IndexItemDataModel
 	{
 		public string Path { get; set; }
 		public long Size { get; set; }
 		public string Hash { get; set; }
+	}
+
+	public class IndexAddDataModel
+	{
+		// public int PercentageComplete { get; set; } = 0;
+		public string BaseDirectory { get; set; }
+		public int Count { get; set; }
+
 	}
 
 	public class IndexUpdateDataModel
@@ -74,7 +82,7 @@ namespace todo.Core
 		public string Action { get; set; }
 	}
 
-	public class CompareIndexModel
+	public class IndexCompareDataModel
 	{
 		public string File1 { get; set; }
 		public string File2 { get; set; }

@@ -10,17 +10,6 @@ namespace dupesfiles2.Core
 {
 	public class FileTools
 	{
-
-		public class ProgressReportModel
-		{
-			// public int PercentageComplete { get; set; } = 0;
-			public string BaseDirectory { get; set; }
-			public int Count { get; set; }
-
-		}
-
-		// public static async Task<List<FileInfo[]>> GetFilesAsync(string basepath, string searchpattern, EnumerationOptions options, bool recursive, CancellationToken cancellationToken)
-
 		public const int BinaryCompareBufferSize = 4096;
 		public const int HashBufferSize = 1200000;
 

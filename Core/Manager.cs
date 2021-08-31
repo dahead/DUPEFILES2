@@ -33,9 +33,9 @@ namespace dupesfiles2.Core
 
 		#region "Add files"
 
-		public async Task<List<FileInfo[]>> AddFilesToIndex(IndexAddCommand.Settings settings)
+		public async Task<List<FileInfo[]>> IndexAdd(IndexAddCommand.Settings settings)
 		{
-			Progress<ProgressReportModel> progress = new Progress<ProgressReportModel>();
+			Progress<IndexAddDataModel> progress = new Progress<IndexAddDataModel>();
 			progress.ProgressChanged += ReportAddFilesToIndexProgress;
 			var watch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -47,7 +47,7 @@ namespace dupesfiles2.Core
 			{
 				foreach (var subitem in item)
 				{
-					this.idx.Add(new ItemDataModel() { Path = subitem.FullName, Size = subitem.Length, Hash = string.Empty });
+					this.idx.Add(new IndexItemDataModel() { Path = subitem.FullName, Size = subitem.Length, Hash = string.Empty });
 				}
 			}
 
@@ -56,7 +56,7 @@ namespace dupesfiles2.Core
 			return results;
 		}
 
-		public static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<ProgressReportModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
+		private static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<IndexAddDataModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			// setup base search path
 			if (string.IsNullOrWhiteSpace(settings.SearchPattern))
@@ -93,7 +93,7 @@ namespace dupesfiles2.Core
 
 					cancellationToken.ThrowIfCancellationRequested();
 
-					ProgressReportModel report = new ProgressReportModel();
+					IndexAddDataModel report = new IndexAddDataModel();
 					report.BaseDirectory = dir.FullName;
 					report.Count = results.Length;
 					// report.PercentageComplete = (output.Count * 100) / results.Length;
@@ -105,7 +105,7 @@ namespace dupesfiles2.Core
 			return output;
 		}
 
-		private void ReportAddFilesToIndexProgress(object sender, ProgressReportModel e)
+		private void ReportAddFilesToIndexProgress(object sender, IndexAddDataModel e)
 		{
 			AnsiConsole.MarkupLine($" Adding [bold]{ e.Count }[/] files from [red]{ e.BaseDirectory }[/] ");
 		}
@@ -114,9 +114,9 @@ namespace dupesfiles2.Core
 
 		#region "Scan index"
 
-		public async Task<List<ItemDataModel>> ScanIndex(IndexScanCommand.Settings settings)
+		public async Task<List<IndexItemDataModel>> IndexScanHash(IndexScanCommand.Settings settings)
 		{
-			Progress<ItemDataModel> progress = new Progress<ItemDataModel>();
+			Progress<IndexItemDataModel> progress = new Progress<IndexItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
 			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetHashParallelAsync(progress, this.idx, settings, this.cts.Token);
@@ -124,16 +124,16 @@ namespace dupesfiles2.Core
 			return result;
 		}
 
-		public static async Task<List<ItemDataModel>> GetHashParallelAsync(IProgress<ItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
+		private static async Task<List<IndexItemDataModel>> GetHashParallelAsync(IProgress<IndexItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			var report = new List<ItemDataModel>();
+			var report = new List<IndexItemDataModel>();
 
-			IEnumerable<IGrouping<long, ItemDataModel>> filesizeduplicates =
+			IEnumerable<IGrouping<long, IndexItemDataModel>> filesizeduplicates =
 				idx.GroupBy(f => f.Size, f => f);
 
 			await Task.Run(() =>
 			{
-				Parallel.ForEach<IGrouping<long, ItemDataModel>>(filesizeduplicates, (g) =>
+				Parallel.ForEach<IGrouping<long, IndexItemDataModel>>(filesizeduplicates, (g) =>
 				{
 					// Only when we have more than one file
 					if (g.Count() > 1)
@@ -143,7 +143,7 @@ namespace dupesfiles2.Core
 						{
 							// string checksum = CalculateMD5(item.Path);
 							string checksum = CalculateSHA256(sub.Path);
-							ItemDataModel result = new ItemDataModel() { Path = sub.Path, Hash = checksum };
+							IndexItemDataModel result = new IndexItemDataModel() { Path = sub.Path, Size = sub.Size, Hash = checksum };
 							report.Add(result);
 
 							// remember the hash
@@ -161,7 +161,7 @@ namespace dupesfiles2.Core
 			return report;
 		}
 
-		private void ReportScanIndexProgress(object sender, ItemDataModel e)
+		private void ReportScanIndexProgress(object sender, IndexItemDataModel e)
 		{
 			AnsiConsole.MarkupLine($"Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
 		}
@@ -170,9 +170,9 @@ namespace dupesfiles2.Core
 
 		#region "Compare index"
 
-		public async Task<List<CompareIndexModel>> CompareIndex(IndexScanCommand.Settings settings)
+		public async Task<List<IndexCompareDataModel>> IndexCompareBinary(IndexScanCommand.Settings settings)
 		{
-			Progress<CompareIndexModel> progress = new Progress<CompareIndexModel>();
+			Progress<IndexCompareDataModel> progress = new Progress<IndexCompareDataModel>();
 			progress.ProgressChanged += ReportCompareIndexProgress;
 			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetBinaryParallelAsync(progress, this.idx, settings, this.cts.Token);
@@ -180,16 +180,16 @@ namespace dupesfiles2.Core
 			return result;
 		}
 
-		public static async Task<List<CompareIndexModel>> GetBinaryParallelAsync(IProgress<CompareIndexModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
+		private static async Task<List<IndexCompareDataModel>> GetBinaryParallelAsync(IProgress<IndexCompareDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			var report = new List<CompareIndexModel>();
+			var report = new List<IndexCompareDataModel>();
 
-			IEnumerable<IGrouping<string, ItemDataModel>> filehashduplicates =
+			IEnumerable<IGrouping<string, IndexItemDataModel>> filehashduplicates =
 				idx.GroupBy(f => f.Hash, f => f);
 
 			await Task.Run(() =>
 			{
-				Parallel.ForEach<IGrouping<string, ItemDataModel>>(filehashduplicates, (g) =>
+				Parallel.ForEach<IGrouping<string, IndexItemDataModel>>(filehashduplicates, (g) =>
 				{
 
 					if (g.Count() > 1 && !string.IsNullOrWhiteSpace(g.Key))
@@ -204,7 +204,7 @@ namespace dupesfiles2.Core
 
 							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
 
-							CompareIndexModel result = new CompareIndexModel() { File1 = cur.Path, File2 = next.Path, Identical = identical };
+							IndexCompareDataModel result = new IndexCompareDataModel() { File1 = cur.Path, File2 = next.Path, Identical = identical };
 							report.Add(result);
 
 							cancellationToken.ThrowIfCancellationRequested();
@@ -218,7 +218,7 @@ namespace dupesfiles2.Core
 			return report;
 		}
 
-		private void ReportCompareIndexProgress(object sender, CompareIndexModel e)
+		private void ReportCompareIndexProgress(object sender, IndexCompareDataModel e)
 		{
 			switch (e.Identical)
 			{
@@ -237,7 +237,7 @@ namespace dupesfiles2.Core
 
 		#region "Update index"
 
-		public async Task<List<ItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
+		public async Task<List<IndexItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
 			Progress<IndexUpdateDataModel> progress = new Progress<IndexUpdateDataModel>();
 			progress.ProgressChanged += ReportUpdateIndexProgress;
@@ -247,22 +247,22 @@ namespace dupesfiles2.Core
 			return result;
 		}
 
-		internal static async Task<List<ItemDataModel>> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
+		internal static async Task<List<IndexItemDataModel>> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			var report = new List<IndexUpdateDataModel>();
 			await Task.Run(() =>
 			{
-				Parallel.ForEach<ItemDataModel>(idx, (item) =>
+				Parallel.ForEach<IndexItemDataModel>(idx, (item) =>
 				{
 					IndexUpdateDataModel result = new IndexUpdateDataModel() { Path = item.Path };
 
 					if (System.IO.File.Exists(item.Path))
 					{
+						// check for changed file size
 						long oldsize = item.Size;
-
-						// Update file size
 						FileInfo fi = new System.IO.FileInfo(item.Path);
 
+						// Update file size
 						if (oldsize != fi.Length)
 						{
 							// update file size

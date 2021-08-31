@@ -38,14 +38,14 @@ namespace todo.Commands
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
 			{
-				await m.ScanIndex(settings);
+				await m.IndexScanHash(settings);
 			});
 
 			// binary
 			await AnsiConsole.Status()
 			.StartAsync("Scanning the index for binary duplicates...", async ctx =>
 			{
-				await m.CompareIndex(settings);
+				await m.IndexCompareBinary(settings);
 			});
 
 			// save and return
