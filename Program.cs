@@ -23,7 +23,7 @@ namespace dupefiles2
 			{
 				config.SetApplicationName(cAppName);
 #if DEBUG
-				config.PropagateExceptions();
+				// config.PropagateExceptions();
 				config.ValidateExamples();
 #endif
 				// add commands

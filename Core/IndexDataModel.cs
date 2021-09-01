@@ -11,7 +11,7 @@ using Spectre.Console.Cli;
 namespace dupefiles2.Core
 {
 
-	public class IndexDataModel : List<IndexItemDataModel>
+	public class IndexDataModel : IndexItemList
 	{
 
 		public const string DefaultFilename = "index.json";
@@ -59,11 +59,26 @@ namespace dupefiles2.Core
 			return false;
 		}
 
+		internal bool ContainsItem(string fullName)
+		{
+			foreach (var item in this)
+			{
+				if (item.FullName == fullName)
+					return true;
+			}
+			return false;
+		}
+	}
+
+	public class IndexItemList : List<IndexItemDataModel>
+	{
+
 	}
 
 	public class IndexItemDataModel
 	{
-		public string Path { get; set; }
+		public string FullName { get; set; }
+		public string DirectoryName { get; set; }
 		public long Size { get; set; }
 		public string Hash { get; set; }
 	}
@@ -78,15 +93,15 @@ namespace dupefiles2.Core
 
 	public class IndexUpdateDataModel
 	{
-		public string Path { get; set; }
+		public string FullName { get; set; }
 		public string Action { get; set; }
 	}
 
 	public class IndexCompareDataModel
 	{
 		public string Hash { get; set; }
-		public string File1 { get; set; }
-		public string File2 { get; set; }
+		public string Fullname1 { get; set; }
+		public string Fullname2 { get; set; }
 		public bool Identical { get; set; }
 		public long Size { get; set; }
 	}

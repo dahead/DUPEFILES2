@@ -43,7 +43,10 @@ namespace dupefiles2.Core
 			{
 				foreach (var subitem in item)
 				{
-					this.idx.Add(new IndexItemDataModel() { Path = subitem.FullName, Size = subitem.Length, Hash = string.Empty });
+					if (!idx.ContainsItem(subitem.FullName))
+					{
+						this.idx.Add(new IndexItemDataModel() { FullName = subitem.FullName, DirectoryName = subitem.DirectoryName, Size = subitem.Length, Hash = string.Empty });
+					}
 				}
 			}
 
@@ -136,8 +139,8 @@ namespace dupefiles2.Core
 						foreach (var sub in filtered)
 						{
 							// string checksum = CalculateMD5(item.Path);
-							string checksum = CalculateSHA256(sub.Path);
-							IndexItemDataModel result = new IndexItemDataModel() { Path = sub.Path, Size = sub.Size, Hash = checksum };
+							string checksum = CalculateSHA256(sub.FullName);
+							IndexItemDataModel result = new IndexItemDataModel() { FullName = sub.FullName, DirectoryName = sub.DirectoryName, Size = sub.Size, Hash = checksum };
 							report.Add(result);
 
 							// remember the hash
@@ -157,7 +160,7 @@ namespace dupefiles2.Core
 
 		private void ReportScanIndexProgress(object sender, IndexItemDataModel e)
 		{
-			AnsiConsole.MarkupLine($"Hashing file [bold]{ e.Path }[/] [red]{ e.Hash }[/] ");
+			AnsiConsole.MarkupLine($"Hashing file [bold]{ e.FullName }[/] [red]{ e.Hash }[/] ");
 		}
 
 		#endregion
@@ -196,8 +199,8 @@ namespace dupefiles2.Core
 				AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
 				foreach (var sub in item)
 				{
-					AnsiConsole.MarkupLine($":white_small_square: { sub.File1 }");
-					AnsiConsole.MarkupLine($":white_small_square: { sub.File2 }");
+					AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
+					AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
 				}
 
 			}
@@ -222,15 +225,15 @@ namespace dupefiles2.Core
 							var next = g.ToList()[i + 1];
 
 							// dont compare the file with itself
-							if (cur.Path == next.Path)
+							if (cur.FullName == next.FullName)
 								continue;
 
 							// AnsiConsole.WriteLine($"File: { cur.Path } { next.Path }");
 							// AnsiConsole.WriteLine($"Hash: { cur.Hash } { next.Hash }");
 
-							var identical = FileTools.BinaryCompareFiles(cur.Path, next.Path);
+							var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName);
 
-							IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, File1 = cur.Path, File2 = next.Path, Identical = identical };
+							IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
 							report.Add(result);
 
 							cancellationToken.ThrowIfCancellationRequested();
@@ -249,7 +252,7 @@ namespace dupefiles2.Core
 			switch (e.Identical)
 			{
 				case true:
-					AnsiConsole.MarkupLine($"[red bold]DUPE[/] [grey]{ e.File1 }[/] and [grey]{ e.File2 }[/]");
+					AnsiConsole.MarkupLine($"[red bold]DUPE[/] [grey]{ e.Fullname1 }[/] and [grey]{ e.Fullname2 }[/]");
 					break;
 				// case false:
 				// 	AnsiConsole.MarkupLine($"[grey]nodupe[/] [green]{ e.File1 }[/] and [green]{ e.File2 }[/] [yellow bold]{ e.Identical }[/]");
@@ -275,18 +278,22 @@ namespace dupefiles2.Core
 
 		internal static async Task<List<IndexItemDataModel>> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
 		{
+
+			// remove parameter idx and instead later on use the result of UpdateIndexAsync and make changes
+			// to the MAIN index accordlingly?
+
 			var report = new List<IndexUpdateDataModel>();
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<IndexItemDataModel>(idx, (item) =>
 				{
-					IndexUpdateDataModel result = new IndexUpdateDataModel() { Path = item.Path };
+					IndexUpdateDataModel result = new IndexUpdateDataModel() { FullName = item.FullName };
 
-					if (System.IO.File.Exists(item.Path))
+					if (System.IO.File.Exists(item.FullName))
 					{
 						// check for changed file size
 						long oldsize = item.Size;
-						FileInfo fi = new System.IO.FileInfo(item.Path);
+						FileInfo fi = new System.IO.FileInfo(item.FullName);
 
 						// Update file size
 						if (oldsize != fi.Length)
@@ -295,18 +302,19 @@ namespace dupefiles2.Core
 							item.Size = fi.Length;
 
 							// update checksum
-							string checksum = CalculateSHA256(item.Path);
+							string checksum = CalculateSHA256(item.FullName);
 							item.Hash = checksum;
-
-							result.Action = "Updating size and hash.";
+							result.Action = "[red]updated[/]";
 						}
 					}
 					else
 					{
 						// idx.Remove(item);
-						result.Action = "Removing entry";
-						item.Path = string.Empty;
+						result.Action = "[red]removed[/]";
+						item.FullName = string.Empty;
 					}
+
+					// report
 					report.Add(result);
 
 					cancellationToken.ThrowIfCancellationRequested();
@@ -322,16 +330,41 @@ namespace dupefiles2.Core
 			{
 				for (int i = idx.Count - 1; i >= 0; i--)
 				{
-					if (idx[i].Path == string.Empty)
+					if (idx[i].FullName == string.Empty)
 					{
 						idx.RemoveAt(i);
 					}
 				}
 			});
 
-			// todo: add new directories/files
-			// create unique dir list
-			// check for each dir if we have all files.
+			// Add new directories/files based on the directories already present
+			IndexItemList newitemlist = new IndexItemList();
+			await Task.Run(() =>
+			{
+				var dirs =
+					idx.GroupBy(f => f.DirectoryName, f => f).ToList();
+
+				foreach (var dir in dirs)
+				{
+					foreach (var sub in dir)
+					{
+						IndexUpdateDataModel result = new IndexUpdateDataModel() { FullName = sub.FullName };
+						result.Action = "[yellow]checked[/]";
+						var files = new DirectoryInfo(sub.DirectoryName).GetFiles();
+						foreach (var pnf in files)
+						{
+							if (!idx.ContainsItem(pnf.FullName))
+							{
+								idx.Add(new IndexItemDataModel() { FullName = pnf.FullName, DirectoryName = pnf.DirectoryName, Size = pnf.Length });
+								result.Action = "[green]added[/]";
+							}
+						}
+						// report progress
+						progress.Report(result);
+					}
+
+				}
+			});
 
 			return idx;
 		}
@@ -342,7 +375,7 @@ namespace dupefiles2.Core
 			{
 				if (!string.IsNullOrWhiteSpace(e.Action))
 				{
-					AnsiConsole.MarkupLine($"Updating index [bold]{ e.Path }[/] [red]{ e.Action }[/]");
+					AnsiConsole.MarkupLine($"Updating index [bold]{ e.FullName }[/] [red]{ e.Action }[/]");
 				}
 			}
 			catch (System.Exception)

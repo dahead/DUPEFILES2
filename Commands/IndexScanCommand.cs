@@ -33,8 +33,8 @@ namespace dupefiles2.Commands
 			Manager m = new Manager();
 
 			// Variant 1: never any problems, no display.
-			// await m.IndexScanHash(settings);
-			// await m.IndexCompareBinary(settings);
+			await m.IndexScanHash(settings);
+			await m.IndexCompareBinary(settings);
 
 			// Variant 2:
 			// m.IndexScanHash(settings);
@@ -59,18 +59,18 @@ namespace dupefiles2.Commands
 			// });
 
 
-			// Sometimes these cause problems, BUT ONLY DURING DEBUGGING ???
-			await AnsiConsole.Status()
-			.StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
-			{
-				await m.IndexScanHash(settings);
-			});
+			// // Sometimes these cause problems, BUT ONLY DURING DEBUGGING ???
+			// await AnsiConsole.Status()
+			// .StartAsync("Scanning the index for size and hash duplicates...", async ctx =>
+			// {
+			// 	await m.IndexScanHash(settings);
+			// });
 
-			await AnsiConsole.Status()
-			.StartAsync("Scanning the index for binary duplicates...", async ctx =>
-			{
-				await m.IndexCompareBinary(settings);
-			});
+			// await AnsiConsole.Status()
+			// .StartAsync("Scanning the index for binary duplicates...", async ctx =>
+			// {
+			// 	await m.IndexCompareBinary(settings);
+			// });
 
 			// save and return
 			m.Dispose();
