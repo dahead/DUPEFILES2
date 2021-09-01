@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Spectre.Console;
 using dupefiles2.Commands;
 using static dupefiles2.Core.FileTools;
+using System.Diagnostics;
 
 namespace dupefiles2.Core
 {
@@ -51,7 +52,6 @@ namespace dupefiles2.Core
 			}
 
 			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
-
 			return results;
 		}
 
@@ -95,7 +95,8 @@ namespace dupefiles2.Core
 					report.Count = results.Length;
 					// report.PercentageComplete = (output.Count * 100) / results.Length;
 
-					progress.Report(report);
+					if (settings.Verbose)
+						progress.Report(report);
 				});
 			});
 
@@ -115,9 +116,9 @@ namespace dupefiles2.Core
 		{
 			Progress<IndexItemDataModel> progress = new Progress<IndexItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
-			// var watch = System.Diagnostics.Stopwatch.StartNew();
+			var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetHashParallelAsync(progress, this.idx, settings, this.cts.Token);
-			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return result;
 		}
 
@@ -126,13 +127,17 @@ namespace dupefiles2.Core
 			var report = new List<IndexItemDataModel>();
 
 			IEnumerable<IGrouping<long, IndexItemDataModel>> filesizeduplicates =
-				idx.GroupBy(f => f.Size, f => f);
+				idx.
+				// only check files we have no hash already
+				Where(t => t.Hash == string.Empty).
+				// group by file size
+				GroupBy(f => f.Size, f => f);
 
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<IGrouping<long, IndexItemDataModel>>(filesizeduplicates, (g) =>
 				{
-					// Only when we have more than one file
+					// Only when we have more than one file in this group
 					if (g.Count() > 1)
 					{
 						var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
@@ -149,7 +154,8 @@ namespace dupefiles2.Core
 							cancellationToken.ThrowIfCancellationRequested();
 
 							// report progress
-							progress.Report(result);
+							if (settings.Verbose)
+								progress.Report(result);
 						}
 					}
 				});
@@ -178,35 +184,6 @@ namespace dupefiles2.Core
 			return result;
 		}
 
-		private static void PrintIndexCompareResults(List<IndexCompareDataModel> result)
-		{
-
-			var group = result.Where(t => t.Identical == true).GroupBy(f => f.Hash, f => f);
-
-			if (group.Count() == 0)
-			{
-				AnsiConsole.MarkupLine("[green]No duplicates found in the index.[/]");
-				return;
-			}
-
-			foreach (var item in group)
-			{
-				if (item.Count() == 0)
-				{
-					continue;
-				}
-				var first = item.ToList()[0];
-				AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
-				foreach (var sub in item)
-				{
-					AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
-					AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
-				}
-
-			}
-
-		}
-
 		private static async Task<List<IndexCompareDataModel>> GetBinaryParallelAsync(IProgress<IndexCompareDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			var report = new List<IndexCompareDataModel>();
@@ -228,24 +205,73 @@ namespace dupefiles2.Core
 							if (cur.FullName == next.FullName)
 								continue;
 
+							if (cur.Hash != next.Hash)
+							{
+								Debug.Print("SHOULD NOT HAPPEN!");
+								continue;
+							}
+
+							if (!System.IO.File.Exists(cur.FullName) || !System.IO.File.Exists(next.FullName))
+							{
+								// update the index?
+								continue;
+							}
+
+							cancellationToken.ThrowIfCancellationRequested();
+
 							// AnsiConsole.WriteLine($"File: { cur.Path } { next.Path }");
 							// AnsiConsole.WriteLine($"Hash: { cur.Hash } { next.Hash }");
 
 							var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName);
+							if (identical)
+							{
+								IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
+								report.Add(result);
 
-							IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
-							report.Add(result);
-
-							cancellationToken.ThrowIfCancellationRequested();
-
-							// report progress
-							progress.Report(result);
+								// report progress
+								if (settings.Verbose)
+									progress.Report(result);
+							}
 						}
 				});
 			});
 
 			return report;
 		}
+
+		private static void PrintIndexCompareResults(List<IndexCompareDataModel> result)
+		{
+			var group = result.Where(t => t.Identical == true).GroupBy(f => f.Hash, f => f);
+
+			if (group.Count() == 0)
+			{
+				AnsiConsole.MarkupLine("[green]No duplicates found in the index.[/]");
+				return;
+			}
+
+			foreach (var item in group)
+			{
+				if (item.Count() == 0)
+				{
+					continue;
+				}
+				var first = item.ToList()[0];
+				AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
+				foreach (var sub in item)
+				{
+					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
+					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
+					AnsiConsole.MarkupLine($"{ sub.Fullname1 }");
+					AnsiConsole.MarkupLine($"{ sub.Fullname2 }");
+				}
+			}
+		}
+
+		// private Color GetRandomColor(string hash)
+		// {
+		// 	Random r = new Random();
+		// 	Color.FromArgb(r.Next(0, 256), r.Next(0, 256), r.Next(0, 256));
+		// }
 
 		private void ReportCompareIndexProgress(object sender, IndexCompareDataModel e)
 		{
@@ -320,7 +346,8 @@ namespace dupefiles2.Core
 					cancellationToken.ThrowIfCancellationRequested();
 
 					// report progress
-					progress.Report(result);
+					if (settings.Verbose)
+						progress.Report(result);
 
 				});
 			});
@@ -360,7 +387,8 @@ namespace dupefiles2.Core
 							}
 						}
 						// report progress
-						progress.Report(result);
+						if (settings.Verbose)
+							progress.Report(result);
 					}
 
 				}

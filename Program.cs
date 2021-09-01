@@ -24,7 +24,7 @@ namespace dupefiles2
 				config.SetApplicationName(cAppName);
 #if DEBUG
 				// config.PropagateExceptions();
-				config.ValidateExamples();
+				// config.ValidateExamples();
 #endif
 				// add commands
 				config.AddCommand<IndexAddCommand>("index-add")
@@ -46,6 +46,11 @@ namespace dupefiles2
 
 			AnsiConsole.Render(new FigletText(cAppName).LeftAligned().Color(Color.SkyBlue1));
 			AnsiConsole.MarkupLine($"[grey]v.{ FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.ToString() }[/]");
+
+			if (args.Length == 0)
+			{
+				//
+			}
 
 			return await app.RunAsync(args);
 

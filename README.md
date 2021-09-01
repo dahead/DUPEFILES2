@@ -6,9 +6,9 @@ It scans your file system for duplicate files and helps you save space by removi
 
 ## FEATURES
 
-- Open: OS .NET Core CLI Application
-- Flexible: Runs under linux/mac/windows
-- Fast: Parallel and async file operations
+- Open source .NET Core CLI application
+- Runs under linux/mac/windows
+- Parallel and async file operations
 
 ## COMMANDS
 

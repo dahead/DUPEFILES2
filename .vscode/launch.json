@@ -12,10 +12,10 @@
 			// If you have changed target frameworks, make sure to update the program path.
 			"program": "${workspaceFolder}/bin/Debug/netcoreapp5/dupefiles2.dll",
 			"args": [
-				"index-update"
+				// "index-update"
 				// "index-add",
 				// "/home/dh/"
-				// "index-scan"
+				"index-scan"
 			],
 			"cwd": "${workspaceFolder}",
 			// For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

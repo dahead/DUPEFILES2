@@ -12,6 +12,10 @@ namespace dupefiles2.Commands
 	{
 		public sealed class Settings : CommandSettings
 		{
+			[Description("Verbose mode.")]
+			[CommandOption("-v|--verbose")]
+			[DefaultValue(false)]
+			public bool Verbose { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)

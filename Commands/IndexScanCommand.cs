@@ -25,6 +25,11 @@ namespace dupefiles2.Commands
 			[CommandOption("-z|--max")]
 			[DefaultValue(long.MaxValue)]
 			public long SizeMax { get; set; }
+
+			[Description("Verbose mode.")]
+			[CommandOption("-v|--verbose")]
+			[DefaultValue(false)]
+			public bool Verbose { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
