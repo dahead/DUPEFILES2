@@ -12,23 +12,6 @@ namespace dupefiles2.Commands
 	{
 		public sealed class Settings : CommandSettings
 		{
-			// [Description("Path to search. Defaults to current directory.")]
-			// [CommandArgument(0, "[PATH]")]
-			// public string Path { get; set; }
-
-			// [Description("Search pattern. Defaults to *.* (every file).")]
-			// [CommandOption("-p|--pattern")]
-			// public string SearchPattern { get; set; }
-
-			// [Description("Include hidden files. Defaults to false.")]
-			// [CommandOption("--hidden")]
-			// [DefaultValue(false)]
-			// public bool IncludeHidden { get; set; }
-
-			// [Description("Include all files in all sub directories. Defaults to false.")]
-			// [CommandOption("--recursive")]
-			// [DefaultValue(false)]
-			// public bool Recursive { get; set; }
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)

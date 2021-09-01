@@ -282,13 +282,13 @@ namespace dupefiles2.Core
 			// remove parameter idx and instead later on use the result of UpdateIndexAsync and make changes
 			// to the MAIN index accordlingly?
 
-			var report = new List<IndexUpdateDataModel>();
+			// var report = new List<IndexUpdateDataModel>();
+
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<IndexItemDataModel>(idx, (item) =>
 				{
 					IndexUpdateDataModel result = new IndexUpdateDataModel() { FullName = item.FullName };
-
 					if (System.IO.File.Exists(item.FullName))
 					{
 						// check for changed file size
@@ -315,7 +315,7 @@ namespace dupefiles2.Core
 					}
 
 					// report
-					report.Add(result);
+					// report.Add(result);
 
 					cancellationToken.ThrowIfCancellationRequested();
 
