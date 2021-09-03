@@ -40,6 +40,22 @@ namespace dupefiles2.Core
 			var results = await GetFilesAsync(progress, settings, cts.Token);
 
 			// add results to the index
+			// // Parallel async
+			// await Task.Run(() =>
+			// {
+			// 	Parallel.ForEach<FileInfo[]>(results, (item) =>
+			// 	{
+			// 		foreach (var subitem in item)
+			// 		{
+			// 			if (!idx.ContainsItem(subitem.FullName))
+			// 			{
+			// 				this.idx.Add(new IndexItemDataModel() { FullName = subitem.FullName, DirectoryName = subitem.DirectoryName, Size = subitem.Length, Hash = string.Empty });
+			// 			}
+			// 		}
+			// 	});
+			// });
+
+			// add results to the index
 			foreach (var item in results)
 			{
 				foreach (var subitem in item)
@@ -116,9 +132,16 @@ namespace dupefiles2.Core
 		{
 			Progress<IndexItemDataModel> progress = new Progress<IndexItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
+
+#if DEBUG
 			var watch = System.Diagnostics.Stopwatch.StartNew();
+#endif
 			var result = await GetHashParallelAsync(progress, this.idx, settings, this.cts.Token);
+
+#if DEBUG
 			AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+#endif
+
 			return result;
 		}
 
@@ -140,8 +163,8 @@ namespace dupefiles2.Core
 					// Only when we have more than one file in this group
 					if (g.Count() > 1)
 					{
-						var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
-						foreach (var sub in filtered)
+						// var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
+						foreach (var sub in g)
 						{
 							// string checksum = CalculateMD5(item.Path);
 							string checksum = CalculateSHA256(sub.FullName);
@@ -205,11 +228,11 @@ namespace dupefiles2.Core
 							if (cur.FullName == next.FullName)
 								continue;
 
-							if (cur.Hash != next.Hash)
-							{
-								Debug.Print("SHOULD NOT HAPPEN!");
-								continue;
-							}
+							// if (cur.Hash != next.Hash)
+							// {
+							// 	Debug.Print("SHOULD NOT HAPPEN!");
+							// 	continue;
+							// }
 
 							if (!System.IO.File.Exists(cur.FullName) || !System.IO.File.Exists(next.FullName))
 							{
@@ -261,11 +284,21 @@ namespace dupefiles2.Core
 				{
 					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
 					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
-					AnsiConsole.MarkupLine($"{ sub.Fullname1 }");
-					AnsiConsole.MarkupLine($"{ sub.Fullname2 }");
+					AnsiConsole.WriteLine(sub.Fullname1);
+					AnsiConsole.WriteLine(sub.Fullname2);
 				}
 			}
 		}
+
+		// private Color[] colors =
+		// {
+		// 	Color.Red,
+		// 	Color.Green,
+		// 	Color.Blue,
+		// 	Color.Lime,
+		// 	Color.SkyBlue1,
+		// 	Color.Fuchsia,
+		// };
 
 		// private Color GetRandomColor(string hash)
 		// {
@@ -278,7 +311,7 @@ namespace dupefiles2.Core
 			switch (e.Identical)
 			{
 				case true:
-					AnsiConsole.MarkupLine($"[red bold]DUPE[/] [grey]{ e.Fullname1 }[/] and [grey]{ e.Fullname2 }[/]");
+					AnsiConsole.MarkupLine($"[red bold]DUPE FILE PAIR FOUND[/] [grey]{ e.Fullname1 }[/] and [grey]{ e.Fullname2 }[/]");
 					break;
 				// case false:
 				// 	AnsiConsole.MarkupLine($"[grey]nodupe[/] [green]{ e.File1 }[/] and [green]{ e.File2 }[/] [yellow bold]{ e.Identical }[/]");

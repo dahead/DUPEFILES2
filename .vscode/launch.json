@@ -14,7 +14,7 @@
 			"args": [
 				// "index-update"
 				// "index-add",
-				// "/home/dh/"
+				// "~/Downloads"
 				"index-scan"
 			],
 			"cwd": "${workspaceFolder}",

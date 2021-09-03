@@ -12,19 +12,19 @@ namespace dupefiles2.Commands
 	{
 		public sealed class Settings : CommandSettings
 		{
-			[Description("Scan pattern. Defaults to *.* (every file).")]
-			[CommandOption("-p|--pattern")]
-			public string Pattern { get; set; }
+			// [Description("Scan pattern. Defaults to *.* (every file).")]
+			// [CommandOption("-p|--pattern")]
+			// public string Pattern { get; set; }
 
-			[Description("Minimum file size in bytes. Defaults to 1MB.")]
-			[CommandOption("-a|--min")]
-			[DefaultValue(long.MinValue)]
-			public long SizeMin { get; set; }
+			// [Description("Minimum file size in bytes. Defaults to 1MB.")]
+			// [CommandOption("-a|--min")]
+			// [DefaultValue(1024 * 1024)]
+			// public long SizeMin { get; set; }
 
-			[Description("Maximum file size in bytes. Defaults to 0, no limit.")]
-			[CommandOption("-z|--max")]
-			[DefaultValue(long.MaxValue)]
-			public long SizeMax { get; set; }
+			// [Description("Maximum file size in bytes. Defaults to 0, no limit.")]
+			// [CommandOption("-z|--max")]
+			// [DefaultValue(long.MaxValue)]
+			// public long SizeMax { get; set; }
 
 			[Description("Verbose mode.")]
 			[CommandOption("-v|--verbose")]
