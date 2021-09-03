@@ -85,7 +85,6 @@ namespace dupefiles2.Core
 
 	public class IndexAddDataModel
 	{
-		// public int PercentageComplete { get; set; } = 0;
 		public string BaseDirectory { get; set; }
 		public int Count { get; set; }
 

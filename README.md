@@ -15,7 +15,7 @@ It scans your file system for duplicate files and helps you save space by removi
 ### index-add
 
     index-add [PATH]
-    index-add ~/Downloads
+    index-add ~/Downloads --verbose
 
 Adds files to the index.
 

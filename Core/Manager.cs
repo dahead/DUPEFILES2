@@ -15,7 +15,6 @@ namespace dupefiles2.Core
 	{
 
 		CancellationTokenSource cts = new CancellationTokenSource();
-
 		private IndexDataModel idx { get; set; } = new IndexDataModel();
 
 		public Manager()
@@ -57,15 +56,10 @@ namespace dupefiles2.Core
 
 			// add results to the index
 			foreach (var item in results)
-			{
 				foreach (var subitem in item)
-				{
 					if (!idx.ContainsItem(subitem.FullName))
-					{
-						this.idx.Add(new IndexItemDataModel() { FullName = subitem.FullName, DirectoryName = subitem.DirectoryName, Size = subitem.Length, Hash = string.Empty });
-					}
-				}
-			}
+						this.idx.Add(new IndexItemDataModel()
+						{ FullName = subitem.FullName, DirectoryName = subitem.DirectoryName, Size = subitem.Length, Hash = string.Empty });
 
 			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return results;
@@ -92,10 +86,10 @@ namespace dupefiles2.Core
 			var subdirs = FileTools.EnumerateDirectoriesRecursive(settings.Path, settings.SearchPattern, searchOptions, true);
 			foreach (var item in subdirs)
 				dirs.Add(item);
-			// ...then get all files
-			List<FileInfo[]> output = new List<FileInfo[]>();
 
+			// ...then get all files
 			// Parallel async
+			List<FileInfo[]> output = new List<FileInfo[]>();
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<DirectoryInfo>(dirs, (dir) =>
@@ -109,7 +103,6 @@ namespace dupefiles2.Core
 					IndexAddDataModel report = new IndexAddDataModel();
 					report.BaseDirectory = dir.FullName;
 					report.Count = results.Length;
-					// report.PercentageComplete = (output.Count * 100) / results.Length;
 
 					if (settings.Verbose)
 						progress.Report(report);
@@ -166,7 +159,6 @@ namespace dupefiles2.Core
 						// var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
 						foreach (var sub in g)
 						{
-							// string checksum = CalculateMD5(item.Path);
 							string checksum = CalculateSHA256(sub.FullName);
 							IndexItemDataModel result = new IndexItemDataModel() { FullName = sub.FullName, DirectoryName = sub.DirectoryName, Size = sub.Size, Hash = checksum };
 							report.Add(result);
@@ -360,9 +352,11 @@ namespace dupefiles2.Core
 							// update file size
 							item.Size = fi.Length;
 
+							// dont update checksum. calculate it when needed later in the scan.
 							// update checksum
-							string checksum = CalculateSHA256(item.FullName);
-							item.Hash = checksum;
+							// string checksum = CalculateSHA256(item.FullName);
+							// item.Hash = checksum;
+
 							result.Action = "[red]updated[/]";
 						}
 					}

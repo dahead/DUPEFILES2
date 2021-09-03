@@ -84,25 +84,6 @@ namespace dupefiles2.Core
 
 		}
 
-		public static string CalculateMD5(string filename)
-		{
-			try
-			{
-				using (var hash = MD5.Create())
-				{
-					using (var stream = new BufferedStream(File.OpenRead(filename), HashBufferSize))
-					{
-						var result = hash.ComputeHash(stream);
-						return BitConverter.ToString(result).Replace("-", "").ToLowerInvariant();
-					}
-				}
-			}
-			catch (System.Exception)
-			{
-				return "n/a";
-			}
-		}
-
 		public static string CalculateSHA256(string filename)
 		{
 			try
