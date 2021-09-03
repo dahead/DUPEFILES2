@@ -24,13 +24,13 @@ namespace dupefiles2
 				config.SetApplicationName(cAppName);
 #if DEBUG
 				// config.PropagateExceptions();
-				// config.ValidateExamples();
+				config.ValidateExamples();
 #endif
 				// add commands
 				config.AddCommand<IndexAddCommand>("index-add")
 					   .WithAlias("add")
 					   .WithAlias("ia")
-					   .WithExample(new[] { "index-add", "~/Downloads" })
+					   .WithExample(new[] { "index-add", "~/Downloads", "--verbose" })
 					   .WithDescription("Adds files/directories to the index.");
 
 				config.AddCommand<IndexUpdateCommand>("index-update")
