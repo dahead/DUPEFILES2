@@ -30,6 +30,7 @@ namespace dupefiles2
 				config.AddCommand<IndexAddCommand>("index-add")
 					   .WithAlias("add")
 					   .WithAlias("ia")
+					   .WithExample(new[] { "index-add", "~/Downloads" })
 					   .WithDescription("Adds files/directories to the index.");
 
 				config.AddCommand<IndexUpdateCommand>("index-update")
@@ -47,13 +48,7 @@ namespace dupefiles2
 			AnsiConsole.Render(new FigletText(cAppName).LeftAligned().Color(Color.SkyBlue1));
 			AnsiConsole.MarkupLine($"[grey]v.{ FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.ToString() }[/]");
 
-			if (args.Length == 0)
-			{
-				//
-			}
-
 			return await app.RunAsync(args);
-
 		}
 	}
 
