@@ -442,6 +442,7 @@ namespace dupefiles2.Core
 			catch (System.Exception)
 			{
 				// Spectre.Console
+				//
 				// Sometimes there are invalid characters				
 				// System.InvalidOperationException: Could not find color or style 'MV'.
 				//    at Spectre.Console.StyleParser.Parse(String text) in / _ / src / Spectre.Console / StyleParser.cs:line 16

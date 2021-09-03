@@ -21,6 +21,8 @@ namespace dupefiles2.Commands
 		public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 		{
 			Manager m = new Manager();
+
+			// update the index
 			await m.UpdateIndex(settings);
 
 			// await AnsiConsole.Status()

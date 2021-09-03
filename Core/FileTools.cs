@@ -146,9 +146,7 @@ namespace dupefiles2.Core
 					for (int i = 0; i < iterations; i++)
 					{
 						if (BitConverter.ToInt64(buffer1, i * sizeof(Int64)) != BitConverter.ToInt64(buffer2, i * sizeof(Int64)))
-						{
 							return false;
-						}
 					}
 				}
 			}
