@@ -96,6 +96,11 @@ namespace dupefiles2.Core
 		public string Action { get; set; }
 	}
 
+	public class IndexCompareDataModelList : List<IndexCompareDataModel>
+	{
+
+	}
+	
 	public class IndexCompareDataModel
 	{
 		public string Hash { get; set; }

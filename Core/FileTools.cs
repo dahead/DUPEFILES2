@@ -33,7 +33,6 @@ namespace dupefiles2.Core
 		{
 			var todo = new Queue<string>();
 			todo.Enqueue(basepath);
-
 			while (todo.Count > 0)
 			{
 				string dir = todo.Dequeue();
@@ -57,11 +56,13 @@ namespace dupefiles2.Core
 					continue;
 				}
 
+				// add direcotires
 				foreach (string subdir in subdirs)
 				{
 					todo.Enqueue(subdir);
 				}
 
+				// get sub directories
 				try
 				{
 					items = Directory.GetDirectories(dir, pattern);
@@ -75,13 +76,12 @@ namespace dupefiles2.Core
 					continue;
 				}
 
-				// Return all files
+				// return all directories
 				foreach (string item in items)
 				{
 					yield return new DirectoryInfo(item);
 				}
 			}
-
 		}
 
 		public static string CalculateSHA256(string filename)

@@ -13,7 +13,6 @@ namespace dupefiles2.Core
 {
 	public class Manager
 	{
-
 		CancellationTokenSource cts = new CancellationTokenSource();
 		private IndexDataModel idx { get; set; } = new IndexDataModel();
 
@@ -121,7 +120,7 @@ namespace dupefiles2.Core
 
 		#region "Scan index"
 
-		public async Task<List<IndexItemDataModel>> IndexScanHash(IndexScanCommand.Settings settings)
+		public async Task<IndexItemList> IndexScanHash(IndexScanCommand.Settings settings)
 		{
 			Progress<IndexItemDataModel> progress = new Progress<IndexItemDataModel>();
 			progress.ProgressChanged += ReportScanIndexProgress;
@@ -138,9 +137,9 @@ namespace dupefiles2.Core
 			return result;
 		}
 
-		private static async Task<List<IndexItemDataModel>> GetHashParallelAsync(IProgress<IndexItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
+		private static async Task<IndexItemList> GetHashParallelAsync(IProgress<IndexItemDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			var report = new List<IndexItemDataModel>();
+			var report = new IndexItemList();
 
 			IEnumerable<IGrouping<long, IndexItemDataModel>> filesizeduplicates =
 				idx.
@@ -199,9 +198,9 @@ namespace dupefiles2.Core
 			return result;
 		}
 
-		private static async Task<List<IndexCompareDataModel>> GetBinaryParallelAsync(IProgress<IndexCompareDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
+		private static async Task<IndexCompareDataModelList> GetBinaryParallelAsync(IProgress<IndexCompareDataModel> progress, IndexDataModel idx, IndexScanCommand.Settings settings, CancellationToken cancellationToken)
 		{
-			var report = new List<IndexCompareDataModel>();
+			var report = new IndexCompareDataModelList();
 
 			IEnumerable<IGrouping<string, IndexItemDataModel>> filehashduplicates =
 				idx.GroupBy(f => f.Hash, f => f);
@@ -254,7 +253,7 @@ namespace dupefiles2.Core
 			return report;
 		}
 
-		private static void PrintIndexCompareResults(List<IndexCompareDataModel> result)
+		private static void PrintIndexCompareResults(IndexCompareDataModelList result)
 		{
 			var group = result.Where(t => t.Identical == true).GroupBy(f => f.Hash, f => f);
 
@@ -317,7 +316,7 @@ namespace dupefiles2.Core
 
 		#region "Update index"
 
-		public async Task<List<IndexItemDataModel>> UpdateIndex(IndexUpdateCommand.Settings settings)
+		public async Task<IndexItemList> UpdateIndex(IndexUpdateCommand.Settings settings)
 		{
 			Progress<IndexUpdateDataModel> progress = new Progress<IndexUpdateDataModel>();
 			progress.ProgressChanged += ReportUpdateIndexProgress;
@@ -327,7 +326,7 @@ namespace dupefiles2.Core
 			return result;
 		}
 
-		internal static async Task<List<IndexItemDataModel>> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
+		internal static async Task<IndexItemList> UpdateIndexAsync(IProgress<IndexUpdateDataModel> progress, IndexDataModel idx, IndexUpdateCommand.Settings settings, CancellationToken cancellationToken)
 		{
 
 			// remove parameter idx and instead later on use the result of UpdateIndexAsync and make changes
@@ -383,13 +382,10 @@ namespace dupefiles2.Core
 			await Task.Run(() =>
 			{
 				for (int i = idx.Count - 1; i >= 0; i--)
-				{
 					if (idx[i].FullName == string.Empty)
-					{
 						idx.RemoveAt(i);
-					}
-				}
-			});
+			}
+			);
 
 			// Add new directories/files based on the directories already present
 			IndexItemList newitemlist = new IndexItemList();
@@ -397,13 +393,11 @@ namespace dupefiles2.Core
 			{
 				var dirs =
 					idx.GroupBy(f => f.DirectoryName, f => f).ToList();
-
 				foreach (var dir in dirs)
 				{
 					foreach (var sub in dir)
 					{
-						IndexUpdateDataModel result = new IndexUpdateDataModel() { FullName = sub.FullName };
-						result.Action = "[yellow]checked[/]";
+						IndexUpdateDataModel result = new IndexUpdateDataModel() { FullName = sub.FullName, Action = "[green]checked[/]" };
 						var files = new DirectoryInfo(sub.DirectoryName).GetFiles();
 						foreach (var pnf in files)
 						{
@@ -417,10 +411,8 @@ namespace dupefiles2.Core
 						if (settings.Verbose)
 							progress.Report(result);
 					}
-
 				}
 			});
-
 			return idx;
 		}
 
