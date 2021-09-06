@@ -523,6 +523,13 @@ namespace dupefiles2.Core
 
 			// Todo...
 
+			// These functions dont realle need to be parallel and or asynchronous.
+			// 
+
+			// Ask the use what we shall do for each duplicate?
+
+			// Mark files to delete by user?
+
 			return result;
 		}
 
