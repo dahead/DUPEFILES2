@@ -196,7 +196,10 @@ namespace dupefiles2.Core
 			// var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetBinaryParallelAsync(progress, this.idx, settings, this.cts.Token);
 			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+
+			// Show found duplicates
 			PrintIndexCompareResults(settings, result);
+
 			return result;
 		}
 
@@ -207,7 +210,7 @@ namespace dupefiles2.Core
 			IEnumerable<IGrouping<string, IndexItemDataModel>> filehashduplicates =
 				idx.
 				// Only when we have calculated a hash
-				Where(t => t.Hash != string.Empty).
+				Where(t => t.Hash != string.Empty && t.IsDupe == false).
 				GroupBy(f => f.Hash, f => f).
 				// Only when we have more than one file in this group
 				Where(t => t.Count() > 1);
@@ -252,6 +255,9 @@ namespace dupefiles2.Core
 									IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
 									report.Add(result);
 
+									// mark found items in the index as duplicates
+									idx.MarkDuplicates(result);
+
 									// report progress
 									if (settings.Verbose)
 										progress.Report(result);
@@ -260,7 +266,6 @@ namespace dupefiles2.Core
 							catch (System.Exception)
 							{
 							}
-
 						}
 				});
 			});
@@ -505,7 +510,6 @@ namespace dupefiles2.Core
 
 		#region "Purge Index"
 
-
 		public async Task<List<IndexPurgeDataModel>> IndexPurge(IndexPurgeCommand.Settings settings)
 		{
 			Progress<IndexPurgeDataModel> progress = new Progress<IndexPurgeDataModel>();
@@ -520,15 +524,81 @@ namespace dupefiles2.Core
 		private static async Task<List<IndexPurgeDataModel>> PurgeIndexParallelAsync(Progress<IndexPurgeDataModel> progress, IndexDataModel idx, IndexPurgeCommand.Settings settings, CancellationToken token)
 		{
 			var result = new List<IndexPurgeDataModel>();
-
 			// Todo...
-
-			// These functions dont realle need to be parallel and or asynchronous.
-			// 
+			// These functions dont really need to be parallel and or asynchronous.
 
 			// Ask the use what we shall do for each duplicate?
-
 			// Mark files to delete by user?
+
+			// remove non existing entries
+			await Task.Run(() =>
+			{
+
+				IEnumerable<IGrouping<string, IndexItemDataModel>> filehashduplicates =
+					idx.
+					// Only when we have calculated a hash
+					Where(t => t.Hash != string.Empty && t.IsDupe == true).
+					GroupBy(f => f.Hash, f => f).
+					// Only when we have more than one file in this group
+					Where(t => t.Count() > 1);
+
+				int current_group = 0;
+				int count_groups = filehashduplicates.Count();
+
+				// automaticallay mark files
+				// foreach (var item in filehashduplicates)
+				// {
+				// 	foreach (var sub in item)
+				// 	{
+
+				// 	}
+				// }
+
+
+				switch (settings.Mode)
+				{
+					case IndexPurgeCommand.PurgeMode.Nothing:
+						break;
+					case IndexPurgeCommand.PurgeMode.Delete:
+						break;
+				}
+
+				// 
+
+				if (settings.Quiet)
+				{
+
+				}
+
+				foreach (var item in filehashduplicates)
+				{
+
+					current_group++;
+
+					var first = item.ToList()[0];
+
+					var p = new MultiSelectionPrompt<string>()
+							.Title($"{current_group} / {count_groups} Select one ore more files of this group [green]{ first.Hash }[/][red bold] { first.Size.BytesToString() }[/] for further action.")
+							.InstructionsText("[grey](Press [green]<space>[/] to toggle, [green]<enter>[/] to proceed)[/]")
+							.NotRequired()
+							.PageSize(10);
+
+					// get all files to possibly delete into an array for display
+					string[] subfiles = new string[item.Count()];
+					for (int i = 0; i < item.Count(); i++)
+					{
+						subfiles[i] = item.ToList()[i].FullName;
+					}
+
+					p.AddChoiceGroup(first.Hash, subfiles);
+
+					var result = AnsiConsole.Prompt(p);
+
+					// AnsiConsole.MarkupLine("You selected: " + result);
+				}
+
+
+			});
 
 			return result;
 		}

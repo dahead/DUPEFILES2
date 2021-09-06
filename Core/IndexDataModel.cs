@@ -68,6 +68,13 @@ namespace dupefiles2.Core
 			}
 			return false;
 		}
+
+		internal void MarkDuplicates(IndexCompareDataModel dupes)
+		{
+			var list = this.Where(t => t.Hash == dupes.Hash);
+			foreach (var item in list)
+				item.IsDupe = true;
+		}
 	}
 
 	public class IndexItemList : List<IndexItemDataModel>
@@ -81,6 +88,7 @@ namespace dupefiles2.Core
 		public string DirectoryName { get; set; }
 		public long Size { get; set; }
 		public string Hash { get; set; }
+		public bool IsDupe { get; set; }
 	}
 
 	public class IndexAddDataModel

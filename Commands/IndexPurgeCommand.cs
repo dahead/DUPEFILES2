@@ -27,8 +27,23 @@ namespace dupefiles2.Commands
 		{
 			[Description("Purge mode.")]
 			[CommandOption("-m|--mode")]
-			[DefaultValue(false)]
+			[DefaultValue(PurgeMode.Nothing)]
 			public PurgeMode Mode { get; set; }
+
+			[Description("Filter for file extensions. Defaults to *.* (every file).")]
+			[CommandOption("-e|--extension")]
+			[DefaultValue("*.*)")]
+			public string SearchPattern { get; set; }
+
+			[Description("Quiet mode. No individual selection of files.")]
+			[CommandOption("-q|--quiet")]
+			[DefaultValue(false)]
+			public bool Quiet { get; set; }
+
+			[Description("Simulation mode. No files get harmed.")]
+			[CommandOption("-s|--simulate")]
+			[DefaultValue(false)]
+			public bool Simulate { get; set; }
 
 			[Description("Verbose mode.")]
 			[CommandOption("-v|--verbose")]
