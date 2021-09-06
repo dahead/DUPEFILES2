@@ -55,7 +55,15 @@ namespace dupefiles2.Commands
 				settings.Path = Environment.CurrentDirectory;
 
 			Manager m = new Manager();
-			await m.IndexAdd(settings);
+			// await m.IndexAdd(settings);
+
+			await AnsiConsole.Status()
+				.StartAsync("Indexing...", async ctx =>
+				{
+					ctx.SpinnerStyle(Style.Parse("green"));
+					ctx.Spinner(Spinner.Known.Star);
+					await m.IndexAdd(settings);
+				});
 
 			// await AnsiConsole.Status()
 			// .StartAsync("Adding files to the index...", async ctx =>
@@ -63,6 +71,7 @@ namespace dupefiles2.Commands
 			// 	await m.IndexAdd(settings);
 			// });
 
+			// AnsiConsole.MarkupLine("[green]Done! Index has now {} files.[/]");
 			m.Dispose();
 			return 0;
 		}

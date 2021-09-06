@@ -197,7 +197,7 @@ namespace dupefiles2.Core
 			// var watch = System.Diagnostics.Stopwatch.StartNew();
 			var result = await GetBinaryParallelAsync(progress, this.idx, settings, this.cts.Token);
 			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
-			PrintIndexCompareResults(result);
+			PrintIndexCompareResults(settings, result);
 			return result;
 		}
 
@@ -269,7 +269,7 @@ namespace dupefiles2.Core
 			return report;
 		}
 
-		private static void PrintIndexCompareResults(IndexCompareDataModelList result)
+		private static void PrintIndexCompareResults(IndexScanCommand.Settings settings, IndexCompareDataModelList result)
 		{
 			var group = result.Where(t => t.Identical == true).GroupBy(f => f.Hash, f => f);
 
@@ -279,22 +279,73 @@ namespace dupefiles2.Core
 				return;
 			}
 
-			foreach (var item in group)
+			// tree output
+			if (settings.Tree)
 			{
-				if (item.Count() == 0)
+				var tree =
+					new Tree($"[yellow]Duplicates:[/]")
+					.Style(Style.Parse("red"))
+					.Guide(TreeGuide.Ascii);
+				foreach (var item in group)
 				{
-					continue;
+					if (item.Count() == 0)
+						continue;
+					var first = item.ToList()[0];
+					var foo = tree.AddNode($"[yellow]Hash group { first.Hash }:[/] Size: { first.Size.BytesToString() }");
+					foreach (var sub in item)
+					{
+						foo.AddNode(sub.Fullname1);
+						foo.AddNode(sub.Fullname2);
+					}
 				}
-				var first = item.ToList()[0];
-				AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
-				foreach (var sub in item)
+				AnsiConsole.Render(tree);
+			}
+
+			// table output
+			if (settings.Table)
+			{
+				var table = new Table()
+					.Title($"[yellow]Duplicates[/]")
+					.Border(TableBorder.Ascii)
+					.AddColumn(new TableColumn("Hash"))
+					.AddColumn(new TableColumn("Files"));
+
+				foreach (var item in group)
 				{
-					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
-					// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
-					AnsiConsole.WriteLine(sub.Fullname1);
-					AnsiConsole.WriteLine(sub.Fullname2);
+					if (item.Count() == 0)
+						continue;
+					var first = item.ToList()[0];
+					table.AddRow(first.Hash, first.Size.BytesToString());
+					foreach (var sub in item)
+					{
+						table.AddRow(string.Empty, sub.Fullname1);
+						table.AddRow(string.Empty, sub.Fullname2);
+					}
+
+				}
+				AnsiConsole.Render(table);
+			}
+
+			// normal console output
+			if (!settings.Table)
+			{
+				foreach (var item in group)
+				{
+					if (item.Count() == 0)
+						continue;
+					var first = item.ToList()[0];
+					// AnsiConsole.MarkupLine($"[bold]Hash group [red]{ first.Hash }[/][/] Size: { first.Size.BytesToString() }");
+					AnsiConsole.WriteLine($"Hash group { first.Hash } Size: { first.Size.BytesToString() }");
+					foreach (var sub in item)
+					{
+						// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname1 }");
+						// AnsiConsole.MarkupLine($":white_small_square: { sub.Fullname2 }");
+						AnsiConsole.WriteLine(sub.Fullname1);
+						AnsiConsole.WriteLine(sub.Fullname2);
+					}
 				}
 			}
+
 		}
 
 		// private Color[] colors =

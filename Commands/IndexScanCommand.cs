@@ -26,6 +26,16 @@ namespace dupefiles2.Commands
 			// [DefaultValue(long.MaxValue)]
 			// public long SizeMax { get; set; }
 
+			[Description("Table output mode.")]
+			[CommandOption("--table")]
+			[DefaultValue(false)]
+			public bool Table { get; set; }
+
+			[Description("Tree output mode.")]
+			[CommandOption("--tree")]
+			[DefaultValue(false)]
+			public bool Tree { get; set; }
+
 			[Description("Verbose mode.")]
 			[CommandOption("-v|--verbose")]
 			[DefaultValue(false)]
@@ -38,8 +48,19 @@ namespace dupefiles2.Commands
 			Manager m = new Manager();
 
 			// Variant 1: never any problems, no display.
-			await m.IndexScanHash(settings);
-			await m.IndexCompareBinary(settings);
+			// await m.IndexScanHash(settings);
+			// await m.IndexCompareBinary(settings);
+
+
+			await AnsiConsole.Status()
+			.StartAsync("Scanning...", async ctx =>
+			{
+				ctx.SpinnerStyle(Style.Parse("green"));
+				ctx.Spinner(Spinner.Known.Star);
+
+				await m.IndexScanHash(settings);
+				await m.IndexCompareBinary(settings);
+			});
 
 			// Variant 2:
 			// m.IndexScanHash(settings);
