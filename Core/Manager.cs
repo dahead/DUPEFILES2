@@ -63,7 +63,6 @@ namespace dupefiles2.Core
 			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
 			return results;
 		}
-
 		private static async Task<List<FileInfo[]>> GetFilesAsync(IProgress<IndexAddDataModel> progress, IndexAddCommand.Settings settings, CancellationToken cancellationToken)
 		{
 			// Setup base search path
@@ -503,6 +502,43 @@ namespace dupefiles2.Core
 		}
 
 		#endregion
+
+		#region "Purge Index"
+
+
+		public async Task<List<IndexPurgeDataModel>> IndexPurge(IndexPurgeCommand.Settings settings)
+		{
+			Progress<IndexPurgeDataModel> progress = new Progress<IndexPurgeDataModel>();
+			progress.ProgressChanged += ReportPurgeIndexProgress;
+			// var watch = System.Diagnostics.Stopwatch.StartNew();
+			var result = await PurgeIndexParallelAsync(progress, this.idx, settings, this.cts.Token);
+			// AnsiConsole.MarkupLine($"Total execution time: [bold]{ watch.ElapsedMilliseconds }[/]");
+			PrintIndexPurgeResults(settings, result);
+			return result;
+		}
+
+		private static async Task<List<IndexPurgeDataModel>> PurgeIndexParallelAsync(Progress<IndexPurgeDataModel> progress, IndexDataModel idx, IndexPurgeCommand.Settings settings, CancellationToken token)
+		{
+			var result = new List<IndexPurgeDataModel>();
+
+			// Todo...
+
+			return result;
+		}
+
+		private void ReportPurgeIndexProgress(object sender, IndexPurgeDataModel e)
+		{
+			// Todo...
+			throw new NotImplementedException();
+		}
+		private void PrintIndexPurgeResults(IndexPurgeCommand.Settings settings, List<IndexPurgeDataModel> result)
+		{
+			// Todo...
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
 
 		// https://devblogs.microsoft.com/dotnet/file-io-improvements-in-dotnet-6/
 		// async Task ThreadSafeAsync(string path, IReadOnlyList<ReadOnlyMemory<byte>> buffers)

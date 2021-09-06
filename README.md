@@ -31,8 +31,11 @@ Updates the index and removes non existing files.
 
 Scans the index for duplicate files.
 
+    index-scan --tree
+
+Scans the index for duplicate files and displays the output as a tree.
 
 ## TODO
 
 - Command: index-purge-duplictes...
-- Command: export results
+- Command: export results to json

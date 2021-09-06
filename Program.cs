@@ -42,6 +42,11 @@ namespace dupefiles2
 					   .WithAlias("scan")
 					   .WithAlias("is")
 					   .WithDescription("Scans the index for duplicates.");
+
+				config.AddCommand<IndexPurgeCommand>("index-purge")
+					   .WithAlias("purge")
+					   .WithAlias("ip")
+					   .WithDescription("Delete found duplicate files from the filesystem.");
 			});
 
 			AnsiConsole.Render(new FigletText(cAppName).LeftAligned().Color(Color.SkyBlue1));

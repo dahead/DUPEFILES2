@@ -100,7 +100,7 @@ namespace dupefiles2.Core
 	{
 
 	}
-	
+
 	public class IndexCompareDataModel
 	{
 		public string Hash { get; set; }
@@ -108,5 +108,12 @@ namespace dupefiles2.Core
 		public string Fullname2 { get; set; }
 		public bool Identical { get; set; }
 		public long Size { get; set; }
+	}
+
+	public class IndexPurgeDataModel
+	{
+		public string Fullname { get; set; }
+		public Commands.IndexPurgeCommand.PurgeMode Mode { get; set; }
+		public bool Success { get; set; }
 	}
 }
