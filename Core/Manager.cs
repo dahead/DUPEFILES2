@@ -145,15 +145,18 @@ namespace dupefiles2.Core
 				idx.
 				// only check files we have no hash already
 				Where(t => t.Hash == string.Empty).
+				Where(t => t.Size > 0).
 				// group by file size
-				GroupBy(f => f.Size, f => f);
+				GroupBy(f => f.Size, f => f).
+				// Only when we have more than one file in this group
+				Where(t => t.Count() > 1);
 
 			await Task.Run(() =>
 			{
 				Parallel.ForEach<IGrouping<long, IndexItemDataModel>>(filesizeduplicates, (g) =>
 				{
 					// Only when we have more than one file in this group
-					if (g.Count() > 1)
+					// if (g.Count() > 1)
 					{
 						// var filtered = g.Where(t => t.Size > settings.SizeMin && t.Size < settings.SizeMax);
 						foreach (var sub in g)
@@ -203,7 +206,12 @@ namespace dupefiles2.Core
 			var report = new IndexCompareDataModelList();
 
 			IEnumerable<IGrouping<string, IndexItemDataModel>> filehashduplicates =
-				idx.GroupBy(f => f.Hash, f => f);
+				idx.
+				// Only when we have calculated a hash
+				Where(t => t.Hash != string.Empty).
+				GroupBy(f => f.Hash, f => f).
+				// Only when we have more than one file in this group
+				Where(t => t.Count() > 1);
 
 			await Task.Run(() =>
 			{
@@ -236,7 +244,7 @@ namespace dupefiles2.Core
 							// AnsiConsole.WriteLine($"File: { cur.Path } { next.Path }");
 							// AnsiConsole.WriteLine($"Hash: { cur.Hash } { next.Hash }");
 
-							var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName);
+							var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName, cur.Size);
 							if (identical)
 							{
 								IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
@@ -436,5 +444,20 @@ namespace dupefiles2.Core
 		}
 
 		#endregion
+
+		// https://devblogs.microsoft.com/dotnet/file-io-improvements-in-dotnet-6/
+		// async Task ThreadSafeAsync(string path, IReadOnlyList<ReadOnlyMemory<byte>> buffers)
+		// {
+		// 	using SafeFileHandle handle = File.OpenHandle( // new API (preview 6)
+		// 		path, FileMode.Open, FileAccess.Read, FileShare.None, FileOptions.Asynchronous);
+
+		// 	long offset = 0;
+		// 	for (int i = 0; i < buffers.Count; i++)
+		// 	{
+		// 		await RandomAccess.WriteAsync(handle, buffers[i], offset); // new API (preview 7)
+		// 		offset += buffers[i].Length;
+		// 	}
+		// }
+
 	}
 }

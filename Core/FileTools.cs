@@ -9,7 +9,6 @@ namespace dupefiles2.Core
 {
 	public static class FileTools
 	{
-		public const int BinaryCompareBufferSize = 4096;
 		public const int HashBufferSize = 1200000;
 
 		/// <summary>
@@ -103,9 +102,20 @@ namespace dupefiles2.Core
 			}
 		}
 
-		public static bool BinaryCompareFiles(string file1, string file2)
+		public static bool BinaryCompareFiles(string file1, string file2, long size)
 		{
-			const int bufferSize = BinaryCompareBufferSize;
+			int bufferSize = 4096;
+
+			switch (size)
+			{
+				case long n when (n >= 0 && n <= 1048576):
+					bufferSize = 4096;
+					break;
+				case long n when (n > 1048576 && n <= 104857600):
+					bufferSize = 16384;
+					break;
+			}
+
 			var buffer1 = new byte[bufferSize];
 			var buffer2 = new byte[bufferSize];
 

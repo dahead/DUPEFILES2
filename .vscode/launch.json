@@ -13,9 +13,9 @@
 			"program": "${workspaceFolder}/bin/Debug/netcoreapp5/dupefiles2.dll",
 			"args": [
 				// "index-update"
-				"index-add",
-				"/home/dh/Downloads"
-				// "index-scan"
+				// "index-add",
+				// "/home/dh/Downloads"
+				"index-scan"
 			],
 			"cwd": "${workspaceFolder}",
 			// For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

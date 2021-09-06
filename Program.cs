@@ -44,7 +44,6 @@ namespace dupefiles2
 					   .WithDescription("Scans the index for duplicates.");
 			});
 
-
 			AnsiConsole.Render(new FigletText(cAppName).LeftAligned().Color(Color.SkyBlue1));
 			AnsiConsole.MarkupLine($"[grey]v.{ FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.ToString() }[/]");
 
