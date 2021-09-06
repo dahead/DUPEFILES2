@@ -579,7 +579,7 @@ namespace dupefiles2.Core
 
 					var p = new MultiSelectionPrompt<string>()
 							.Title($"{current_group} / {count_groups} Select one ore more files of this group [green]{ first.Hash }[/][red bold] { first.Size.BytesToString() }[/] for further action.")
-							.InstructionsText("[grey](Press [green]<space>[/] to toggle, [green]<enter>[/] to proceed)[/]")
+							.InstructionsText("Press [green]<space>[/] to toggle, [green]<enter>[/] to proceed)[/]")
 							.NotRequired()
 							.PageSize(10);
 
