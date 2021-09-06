@@ -590,6 +590,7 @@ namespace dupefiles2.Core
 						subfiles[i] = item.ToList()[i].FullName;
 					}
 
+					// add choice group
 					p.AddChoiceGroup(first.Hash, subfiles);
 
 					var result = AnsiConsole.Prompt(p);
