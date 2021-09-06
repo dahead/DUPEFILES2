@@ -244,16 +244,24 @@ namespace dupefiles2.Core
 							// AnsiConsole.WriteLine($"File: { cur.Path } { next.Path }");
 							// AnsiConsole.WriteLine($"Hash: { cur.Hash } { next.Hash }");
 
-							var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName, cur.Size);
-							if (identical)
+							// Compare files binary
+							try
 							{
-								IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
-								report.Add(result);
+								var identical = FileTools.BinaryCompareFiles(cur.FullName, next.FullName, cur.Size);
+								if (identical)
+								{
+									IndexCompareDataModel result = new IndexCompareDataModel() { Hash = cur.Hash, Size = cur.Size, Fullname1 = cur.FullName, Fullname2 = next.FullName, Identical = identical };
+									report.Add(result);
 
-								// report progress
-								if (settings.Verbose)
-									progress.Report(result);
+									// report progress
+									if (settings.Verbose)
+										progress.Report(result);
+								}
 							}
+							catch (System.Exception)
+							{
+							}
+
 						}
 				});
 			});
